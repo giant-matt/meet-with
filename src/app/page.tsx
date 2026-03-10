@@ -1,65 +1,96 @@
-import Image from "next/image";
+import Link from "next/link";
+import { CalendarDays, Users, MousePointerClick, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="border-b border-border/50">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="text-lg font-bold">
+            되는 시간
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/my-events"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              내 이벤트
+            </Link>
+            <Link href="/create">
+              <Button size="sm">이벤트 만들기</Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      {/* Hero */}
+      <main className="flex-1 flex items-center">
+        <div className="max-w-5xl mx-auto px-4 py-20 w-full">
+          <div className="text-center max-w-2xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
+              함께 만날 시간,
+              <br />
+              <span className="text-primary/70">쉽고 빠르게</span> 찾기
+            </h1>
+            <p className="mt-4 text-lg text-muted-foreground max-w-lg mx-auto">
+              가입 없이 몇 초 만에 이벤트를 만들고, 링크를 공유하여
+              <br />
+              모두가 가능한 최적의 시간을 찾아보세요.
+            </p>
+            <div className="mt-8 flex gap-3 justify-center">
+              <Link href="/create">
+                <Button size="lg" className="gap-2">
+                  새 이벤트 만들기
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Features */}
+          <div className="grid sm:grid-cols-3 gap-8 mt-20">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary mb-4">
+                <CalendarDays className="w-6 h-6" />
+              </div>
+              <h3 className="font-semibold mb-2">간편한 이벤트 생성</h3>
+              <p className="text-sm text-muted-foreground">
+                후보 날짜를 선택하고 시간 범위를 정하면 끝.
+                가입이나 로그인은 필요 없어요.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary mb-4">
+                <MousePointerClick className="w-6 h-6" />
+              </div>
+              <h3 className="font-semibold mb-2">드래그로 시간 표시</h3>
+              <p className="text-sm text-muted-foreground">
+                직관적인 그리드에서 클릭 & 드래그로
+                되는 시간을 빠르게 표시하세요.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary mb-4">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="font-semibold mb-2">한눈에 보는 결과</h3>
+              <p className="text-sm text-muted-foreground">
+                히트맵으로 겹치는 시간을 시각적으로 확인하고
+                최적의 시간을 추천받으세요.
+              </p>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 py-6">
+        <div className="max-w-5xl mx-auto px-4 text-center text-sm text-muted-foreground">
+          되는 시간 &mdash; 그룹 일정 조율 도구 &middot; &copy; All rights reserved. <a href="mailto:hwang@ulsan.ac.kr" className="hover:text-foreground transition-colors">hwang@ulsan.ac.kr</a>
+        </div>
+      </footer>
     </div>
   );
 }

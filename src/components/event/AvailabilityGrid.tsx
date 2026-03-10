@@ -1,0 +1,362 @@
+"use client";
+
+import { useState, useCallback, useRef, useMemo } from "react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { generateTimeSlots, formatTime } from "@/lib/slots";
+import { getHeatmapColor, getHeatmapTextColor } from "@/lib/colors";
+
+interface EventDate {
+  id: string;
+  date: string;
+}
+
+interface ParticipantResponse {
+  eventDateId: string;
+  startTime: string;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+  responses: ParticipantResponse[];
+}
+
+interface AvailabilityGridProps {
+  dates: EventDate[];
+  participants: Participant[];
+  mode: string;
+  timeRangeStart: string;
+  timeRangeEnd: string;
+  slotDuration: number;
+  isEditing: boolean;
+  selectedSlots: Set<string>;
+  onSlotsChange: (slots: Set<string>) => void;
+  highlightedParticipant: string | null;
+}
+
+export default function AvailabilityGrid({
+  dates,
+  participants,
+  mode,
+  timeRangeStart,
+  timeRangeEnd,
+  slotDuration,
+  isEditing,
+  selectedSlots,
+  onSlotsChange,
+  highlightedParticipant,
+}: AvailabilityGridProps) {
+  const isDraggingRef = useRef(false);
+  const dragModeRef = useRef<"add" | "remove">("add");
+  const dragStartRef = useRef<{ col: number; row: number } | null>(null);
+  const dragCurrentRef = useRef<{ col: number; row: number } | null>(null);
+  const [, forceUpdate] = useState(0);
+  const [hoveredCell, setHoveredCell] = useState<string | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const timeSlots = useMemo(() => {
+    if (mode === "DATE_ONLY") return [{ start: "00:00", end: "23:59" }];
+    return generateTimeSlots(timeRangeStart, timeRangeEnd, slotDuration);
+  }, [mode, timeRangeStart, timeRangeEnd, slotDuration]);
+
+  const heatmapData = useMemo(() => {
+    const map = new Map<string, string[]>();
+    const filteredParticipants = highlightedParticipant
+      ? participants.filter((p) => p.id === highlightedParticipant)
+      : participants;
+
+    for (const p of filteredParticipants) {
+      for (const r of p.responses) {
+        const key = `${r.eventDateId}-${r.startTime}`;
+        const existing = map.get(key) || [];
+        existing.push(p.name);
+        map.set(key, existing);
+      }
+    }
+    return map;
+  }, [participants, highlightedParticipant]);
+
+  const maxCount = useMemo(() => {
+    if (highlightedParticipant) return 1;
+    return participants.length;
+  }, [participants.length, highlightedParticipant]);
+
+  const getCellKey = (dateId: string, startTime: string) =>
+    `${dateId}-${startTime}`;
+
+  const getDragRange = useCallback(() => {
+    if (!dragStartRef.current || !dragCurrentRef.current)
+      return new Set<string>();
+    const minCol = Math.min(
+      dragStartRef.current.col,
+      dragCurrentRef.current.col
+    );
+    const maxCol = Math.max(
+      dragStartRef.current.col,
+      dragCurrentRef.current.col
+    );
+    const minRow = Math.min(
+      dragStartRef.current.row,
+      dragCurrentRef.current.row
+    );
+    const maxRow = Math.max(
+      dragStartRef.current.row,
+      dragCurrentRef.current.row
+    );
+
+    const keys = new Set<string>();
+    for (let c = minCol; c <= maxCol; c++) {
+      for (let r = minRow; r <= maxRow; r++) {
+        if (c < dates.length && r < timeSlots.length) {
+          keys.add(getCellKey(dates[c].id, timeSlots[r].start));
+        }
+      }
+    }
+    return keys;
+  }, [dates, timeSlots]);
+
+  const handlePointerDown = (col: number, row: number) => {
+    if (!isEditing) return;
+    const key = getCellKey(dates[col].id, timeSlots[row].start);
+    dragModeRef.current = selectedSlots.has(key) ? "remove" : "add";
+    isDraggingRef.current = true;
+    dragStartRef.current = { col, row };
+    dragCurrentRef.current = { col, row };
+    forceUpdate((n) => n + 1);
+  };
+
+  const handlePointerMove = (col: number, row: number) => {
+    if (!isDraggingRef.current || !isEditing) return;
+    dragCurrentRef.current = { col, row };
+    forceUpdate((n) => n + 1);
+  };
+
+  const handlePointerUp = () => {
+    if (!isDraggingRef.current || !isEditing) return;
+    const range = getDragRange();
+    const newSlots = new Set(selectedSlots);
+
+    range.forEach((key) => {
+      if (dragModeRef.current === "add") {
+        newSlots.add(key);
+      } else {
+        newSlots.delete(key);
+      }
+    });
+
+    onSlotsChange(newSlots);
+    isDraggingRef.current = false;
+    dragStartRef.current = null;
+    dragCurrentRef.current = null;
+    forceUpdate((n) => n + 1);
+  };
+
+  const dragRange = isDraggingRef.current ? getDragRange() : new Set<string>();
+
+  const isCellInDragPreview = (key: string) => {
+    if (!isDraggingRef.current) return false;
+    return dragRange.has(key);
+  };
+
+  const getCellStyle = (dateId: string, startTime: string) => {
+    const key = getCellKey(dateId, startTime);
+    const names = heatmapData.get(key) || [];
+    const othersCount = names.length;
+
+    if (isEditing) {
+      const inDrag = isCellInDragPreview(key);
+      const isSelected = selectedSlots.has(key);
+
+      // Show others' heatmap as faint background in edit mode
+      const othersOpacity = maxCount > 0 && othersCount > 0
+        ? 0.08 + (othersCount / maxCount) * 0.15
+        : 0;
+      const bgBase = othersOpacity > 0
+        ? `hsl(142, 50%, ${85 - (othersCount / maxCount) * 20}%)`
+        : "hsl(0, 0%, 97%)";
+
+      if (inDrag) {
+        return {
+          backgroundColor:
+            dragModeRef.current === "add" ? "hsl(142, 70%, 70%)" : "hsl(0, 70%, 90%)",
+          cursor: "pointer",
+        };
+      }
+      if (isSelected) {
+        return {
+          backgroundColor: "hsl(142, 70%, 55%)",
+          color: "white",
+          cursor: "pointer",
+        };
+      }
+      return {
+        backgroundColor: bgBase,
+        cursor: "pointer",
+      };
+    }
+
+    return {
+      backgroundColor: getHeatmapColor(othersCount, maxCount),
+      color: getHeatmapTextColor(othersCount, maxCount),
+    };
+  };
+
+  const handleCellHover = (
+    key: string,
+    e: React.PointerEvent<HTMLDivElement>
+  ) => {
+    if (isEditing || isDraggingRef.current) return;
+    const names = heatmapData.get(key) || [];
+    if (names.length === 0) {
+      setHoveredCell(null);
+      return;
+    }
+    setHoveredCell(key);
+    const rect = gridRef.current?.getBoundingClientRect();
+    if (rect) {
+      setTooltipPos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top - 10,
+      });
+    }
+  };
+
+  return (
+    <div
+      className="select-none relative"
+      ref={gridRef}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={() => {
+        handlePointerUp();
+        setHoveredCell(null);
+      }}
+    >
+      <div className="overflow-x-auto">
+        <div
+          className="grid min-w-fit"
+          style={{
+            gridTemplateColumns:
+              mode === "DATE_ONLY"
+                ? `repeat(${dates.length}, minmax(80px, 1fr))`
+                : `60px repeat(${dates.length}, minmax(60px, 1fr))`,
+          }}
+        >
+          {/* Header row */}
+          {mode !== "DATE_ONLY" && (
+            <div className="sticky left-0 bg-background z-10" />
+          )}
+          {dates.map((d) => (
+            <div
+              key={d.id}
+              className="text-center text-xs font-medium py-2 border-b border-border"
+            >
+              <div>{format(new Date(d.date), "M/d", { locale: ko })}</div>
+              <div className="text-muted-foreground">
+                {format(new Date(d.date), "EEE", { locale: ko })}
+              </div>
+            </div>
+          ))}
+
+          {/* Time slots */}
+          {timeSlots.map((slot, rowIdx) => (
+            <div key={`row-${rowIdx}`} className="contents">
+              {mode !== "DATE_ONLY" && (
+                <div
+                  className="sticky left-0 bg-background z-10 text-xs text-muted-foreground pr-2 flex items-center justify-end border-b border-border/50"
+                  style={{ height: mode === "DATE_ONLY" ? "60px" : "50px" }}
+                >
+                  {rowIdx % (60 / slotDuration) === 0 && formatTime(slot.start)}
+                </div>
+              )}
+              {dates.map((d, colIdx) => {
+                const key = getCellKey(d.id, slot.start);
+                const names = heatmapData.get(key) || [];
+                const count = names.length;
+
+                return (
+                  <div
+                    key={key}
+                    className={`border-b border-r border-border/30 transition-colors relative ${
+                      mode === "DATE_ONLY"
+                        ? "flex items-center justify-center"
+                        : ""
+                    }`}
+                    style={{
+                      height: mode === "DATE_ONLY" ? "60px" : "50px",
+                      ...getCellStyle(d.id, slot.start),
+                    }}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      handlePointerDown(colIdx, rowIdx);
+                    }}
+                    onPointerMove={(e) => {
+                      handlePointerMove(colIdx, rowIdx);
+                      handleCellHover(key, e);
+                    }}
+                    onPointerEnter={(e) => handleCellHover(key, e)}
+                    onPointerLeave={() => setHoveredCell(null)}
+                    onPointerUp={handlePointerUp}
+                  >
+                    {mode === "DATE_ONLY" && !isEditing && count > 0 && (
+                      <span className="text-sm font-medium">{count}</span>
+                    )}
+                    {isEditing && count > 0 && !selectedSlots.has(key) && (
+                      <span className="text-[10px] text-muted-foreground/60 absolute bottom-0.5 right-1 pointer-events-none">
+                        {count}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom Tooltip */}
+      {hoveredCell && !isEditing && (() => {
+        const names = heatmapData.get(hoveredCell) || [];
+        if (names.length === 0) return null;
+        return (
+          <div
+            className="absolute z-50 pointer-events-none bg-foreground text-background text-xs rounded-md px-3 py-2 shadow-lg"
+            style={{
+              left: tooltipPos.x,
+              top: tooltipPos.y,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            <p className="font-medium">
+              {names.length}/{participants.length}명 가능
+            </p>
+            <p className="opacity-80">{names.join(", ")}</p>
+          </div>
+        );
+      })()}
+
+      {/* Heatmap Legend */}
+      {!isEditing && participants.length > 0 && (
+        <div className="flex items-center gap-2 mt-4 justify-center text-xs text-muted-foreground">
+          <span>0명</span>
+          <div className="flex h-4">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div
+                key={i}
+                className="w-6 h-4"
+                style={{
+                  backgroundColor: getHeatmapColor(i + 1, 5),
+                }}
+              />
+            ))}
+          </div>
+          <span>전원</span>
+        </div>
+      )}
+    </div>
+  );
+}

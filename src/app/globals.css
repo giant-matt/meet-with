@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -126,4 +126,88 @@
   html {
     @apply font-sans;
   }
+}
+
+/* react-day-picker custom styles */
+.rdp-root {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: oklch(0.205 0 0);
+  --rdp-accent-background-color: oklch(0.97 0 0);
+}
+
+.rdp-root .rdp-month_caption {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  text-align: center;
+}
+
+.rdp-root .rdp-weekday {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: oklch(0.556 0 0);
+  width: var(--rdp-cell-size);
+  height: 32px;
+}
+
+.rdp-root .rdp-day {
+  width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+}
+
+.rdp-root .rdp-day button {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.375rem;
+}
+
+.rdp-root .rdp-today:not(.rdp-selected) {
+  font-weight: 700;
+  color: oklch(0.205 0 0);
+}
+
+.rdp-root .rdp-selected .rdp-day_button {
+  background-color: oklch(0.205 0 0);
+  color: oklch(0.985 0 0);
+  border-radius: 0.375rem;
+}
+
+.rdp-root .rdp-selected:hover .rdp-day_button {
+  background-color: oklch(0.3 0 0);
+}
+
+.rdp-root .rdp-day:not(.rdp-selected):not(.rdp-disabled):hover .rdp-day_button {
+  background-color: oklch(0.97 0 0);
+  border-radius: 0.375rem;
+}
+
+.rdp-root .rdp-disabled {
+  opacity: 0.35;
+}
+
+.rdp-root .rdp-nav {
+  display: flex;
+  align-items: center;
+}
+
+.rdp-root .rdp-button_previous,
+.rdp-root .rdp-button_next {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.rdp-root .rdp-button_previous:hover,
+.rdp-root .rdp-button_next:hover {
+  background-color: oklch(0.97 0 0);
+}
+
+.rdp-root .rdp-months {
+  gap: 1rem;
 }

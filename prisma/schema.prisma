@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Event {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  description    String?
+  organizerName  String
+  organizerEmail String   @default("")
+  mode           String   @default("DATETIME")
+  timeRangeStart String   @default("09:00")
+  timeRangeEnd   String   @default("18:00")
+  slotDuration   Int      @default(30)
+  timezone       String   @default("Asia/Seoul")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  dates        EventDate[]
+  participants Participant[]
+}
+
+model EventDate {
+  id      String   @id @default(cuid())
+  eventId String
+  date    DateTime
+
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  responses Response[]
+
+  @@unique([eventId, date])
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  eventId   String
+  name      String
+  email     String   @default("")
+  createdAt DateTime @default(now())
+
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  responses Response[]
+
+  @@unique([eventId, name])
+}
+
+model Response {
+  id            String @id @default(cuid())
+  participantId String
+  eventDateId   String
+  startTime     String
+  endTime       String
+
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  eventDate   EventDate   @relation(fields: [eventDateId], references: [id], onDelete: Cascade)
+
+  @@unique([participantId, eventDateId, startTime])
+}

@@ -11,17 +11,12 @@ export default function Home() {
           <Link href="/" className="text-lg font-bold">
             되는 시간
           </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/my-events"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              내 이벤트
-            </Link>
-            <Link href="/create">
-              <Button size="sm">이벤트 만들기</Button>
-            </Link>
-          </div>
+          <Link
+            href="/my-events"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            내 이벤트
+          </Link>
         </div>
       </header>
 
@@ -35,13 +30,15 @@ export default function Home() {
               <span className="text-primary/70">쉽고 빠르게</span> 찾기
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-lg mx-auto">
-              가입 없이 몇 초 만에 이벤트를 만들고, 링크를 공유하여
+              가입 없이 몇 초 만에 이벤트를 만들고,
               <br />
-              모두가 가능한 최적의 시간을 찾아보세요.
+              링크를 공유하여,
+              <br />
+              모두가 가능한 &lsquo;되는 시간&rsquo;을 찾아보세요.
             </p>
             <div className="mt-8 flex gap-3 justify-center">
               <Link href="/create">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2 bg-[#3A7D44] hover:bg-[#2E6436] text-white">
                   새 이벤트 만들기
                   <ArrowRight className="w-4 h-4" />
                 </Button>

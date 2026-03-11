@@ -183,13 +183,13 @@ export default function AvailabilityGrid({
       if (inDrag) {
         return {
           backgroundColor:
-            dragModeRef.current === "add" ? "hsl(142, 70%, 70%)" : "hsl(0, 70%, 90%)",
+            dragModeRef.current === "add" ? "hsl(217, 80%, 75%)" : "hsl(0, 70%, 90%)",
           cursor: "pointer",
         };
       }
       if (isSelected) {
         return {
-          backgroundColor: "hsl(142, 70%, 55%)",
+          backgroundColor: "hsl(217, 80%, 56%)",
           color: "white",
           cursor: "pointer",
         };

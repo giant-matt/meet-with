@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useMemo } from "react";
+import { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import { ko } from "date-fns/locale";
@@ -31,9 +31,9 @@ function CreateForm() {
   const [description, setDescription] = useState("");
   const [mode, setMode] = useState<"DATETIME" | "DATE_ONLY">("DATETIME");
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const lastClickedDateRef = useRef<Date | null>(null);
   const [timeRangeStart, setTimeRangeStart] = useState("09:00");
   const [timeRangeEnd, setTimeRangeEnd] = useState("18:00");
-  const [slotDuration, setSlotDuration] = useState(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingEvent, setIsLoadingEvent] = useState(!!editSlug);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
@@ -71,7 +71,6 @@ function CreateForm() {
         setMode(event.mode);
         setTimeRangeStart(event.timeRangeStart);
         setTimeRangeEnd(event.timeRangeEnd);
-        setSlotDuration(event.slotDuration);
         setSelectedDates(
           event.dates.map((d: { date: string }) => new Date(d.date))
         );
@@ -84,6 +83,38 @@ function CreateForm() {
       }
     })();
   }, [editSlug, router]);
+
+  const handleDayClick = useCallback((day: Date, _modifiers: Record<string, boolean>, e: React.MouseEvent) => {
+    if (e.shiftKey && lastClickedDateRef.current) {
+      const start = lastClickedDateRef.current;
+      const end = day;
+      const from = start < end ? start : end;
+      const to = start < end ? end : start;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const rangeDates: Date[] = [];
+      const current = new Date(from);
+      while (current <= to) {
+        if (current >= today) {
+          rangeDates.push(new Date(current));
+        }
+        current.setDate(current.getDate() + 1);
+      }
+
+      setSelectedDates((prev) => {
+        const existingSet = new Set(prev.map((d) => d.toDateString()));
+        const merged = [...prev];
+        for (const d of rangeDates) {
+          if (!existingSet.has(d.toDateString())) {
+            merged.push(d);
+          }
+        }
+        return merged;
+      });
+    }
+    lastClickedDateRef.current = day;
+  }, []);
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -132,7 +163,7 @@ function CreateForm() {
             dates: sortedDates,
             timeRangeStart,
             timeRangeEnd,
-            slotDuration,
+            slotDuration: 30,
           }),
         });
 
@@ -157,7 +188,7 @@ function CreateForm() {
             dates: sortedDates,
             timeRangeStart,
             timeRangeEnd,
-            slotDuration,
+            slotDuration: 30,
           }),
         });
 
@@ -318,6 +349,7 @@ function CreateForm() {
                   mode="multiple"
                   selected={selectedDates}
                   onSelect={(dates) => setSelectedDates(dates || [])}
+                  onDayClick={handleDayClick}
                   locale={ko}
                   numberOfMonths={isMobile ? 1 : 2}
                   disabled={{ before: new Date() }}
@@ -390,24 +422,6 @@ function CreateForm() {
                         </option>
                       ))}
                     </select>
-                  </div>
-                </div>
-                <div>
-                  <Label>시간 단위</Label>
-                  <div className="flex gap-2 mt-1">
-                    {[15, 30, 60].map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setSlotDuration(d)}
-                        className={`px-4 py-2 rounded-md text-sm transition-colors ${
-                          slotDuration === d
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary hover:bg-secondary/80"
-                        }`}
-                      >
-                        {d}분
-                      </button>
-                    ))}
                   </div>
                 </div>
               </CardContent>

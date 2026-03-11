@@ -283,19 +283,6 @@ function EventPageInner({ slug }: { slug: string }) {
                 <Settings className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">약속 수정</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyLink}
-                aria-label={copied ? "복사됨" : "링크 복사"}
-              >
-                {copied ? (
-                  <Check className="w-4 h-4 sm:mr-1" />
-                ) : (
-                  <Copy className="w-4 h-4 sm:mr-1" />
-                )}
-                <span className="hidden sm:inline">{copied ? "복사됨" : "링크 복사"}</span>
-              </Button>
             </div>
           </div>
         </div>
@@ -335,9 +322,9 @@ function EventPageInner({ slug }: { slug: string }) {
                     </Button>
                   </>
                 ) : (
-                  <Button size="sm" onClick={handleStartEdit}>
+                  <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
                     <Pencil className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">내 시간 입력하기</span>
+                    <span className="hidden sm:inline">내 가능시간 입력하기</span>
                     <span className="sm:hidden">입력하기</span>
                   </Button>
                 )}
@@ -368,10 +355,31 @@ function EventPageInner({ slug }: { slug: string }) {
                   <p className="text-sm text-muted-foreground">
                     아직 아무도 응답하지 않았어요
                   </p>
-                  <Button size="sm" onClick={handleStartEdit}>
+                  <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
                     <Pencil className="w-4 h-4 mr-1" />
                     첫 번째로 시간 입력하기
                   </Button>
+                </div>
+              )}
+
+              {/* Share link */}
+              {!isEditing && (
+                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border/30">
+                  <Button
+                    size="sm"
+                    onClick={handleCopyLink}
+                    className="shrink-0 bg-[#3A7D44] hover:bg-[#2E6436] text-white"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 mr-1" />
+                    ) : (
+                      <Copy className="w-4 h-4 mr-1" />
+                    )}
+                    {copied ? "복사됨" : "링크 복사"}
+                  </Button>
+                  <p className="text-sm text-muted-foreground">
+                    링크를 복사하여 약속에 참여해야 되는 분께 공유해 주세요
+                  </p>
                 </div>
               )}
             </CardContent>

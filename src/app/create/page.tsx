@@ -41,6 +41,14 @@ function CreateForm() {
   useEffect(() => {
     if (!editSlug) return;
 
+    // organizerEmail은 보안상 API 응답에 포함되지 않으므로 sessionStorage에서 읽음
+    const savedEmail = sessionStorage.getItem(`editEmail:${editSlug}`);
+    if (!savedEmail) {
+      toast.error("약속 수정 권한이 없습니다");
+      router.push(`/e/${editSlug}`);
+      return;
+    }
+
     (async () => {
       try {
         const res = await fetch(`/api/events/${editSlug}`);
@@ -49,7 +57,7 @@ function CreateForm() {
 
         setTitle(event.title);
         setOrganizerName(event.organizerName);
-        setOrganizerEmail(event.organizerEmail || "");
+        setOrganizerEmail(savedEmail);
         setDescription(event.description || "");
         setMode(event.mode);
         setTimeRangeStart(event.timeRangeStart);
@@ -146,6 +154,8 @@ function CreateForm() {
 
         const { event } = await res.json();
         toast.success("약속이 생성되었습니다!");
+        sessionStorage.setItem(`respondEmail:${event.slug}`, organizerEmail.trim());
+        sessionStorage.setItem(`editEmail:${event.slug}`, organizerEmail.trim());
         router.push(`/e/${event.slug}?respond=organizer`);
       }
     } catch (error) {

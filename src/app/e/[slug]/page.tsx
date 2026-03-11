@@ -21,7 +21,6 @@ interface EventData {
   slug: string;
   description: string | null;
   organizerName: string;
-  organizerEmail: string;
   mode: string;
   timeRangeStart: string;
   timeRangeEnd: string;
@@ -76,7 +75,9 @@ function EventPageInner({ slug }: { slug: string }) {
     if (autoRespondHandled || !event || loading) return;
     if (searchParams.get("respond") === "organizer") {
       setParticipantName(event.organizerName);
-      setParticipantEmail(event.organizerEmail || "");
+      const savedEmail = sessionStorage.getItem(`respondEmail:${slug}`);
+      setParticipantEmail(savedEmail || "");
+      sessionStorage.removeItem(`respondEmail:${slug}`);
       setIsEditing(true);
       setAutoRespondHandled(true);
       // Clean up URL
@@ -131,12 +132,16 @@ function EventPageInner({ slug }: { slug: string }) {
         availability[dateId].push(startTime);
       }
 
+      // Include editToken if available (for modifying existing responses)
+      const storedToken = localStorage.getItem(`editToken:${slug}:${participantName}`);
+
       const res = await fetch(`/api/events/${slug}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           participantName,
           participantEmail,
+          editToken: storedToken || undefined,
           availability,
         }),
       });
@@ -144,6 +149,12 @@ function EventPageInner({ slug }: { slug: string }) {
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "저장에 실패했습니다");
+      }
+
+      const result = await res.json();
+      // Save editToken for future edits
+      if (result.editToken) {
+        localStorage.setItem(`editToken:${slug}:${participantName}`, result.editToken);
       }
 
       toast.success("저장되었습니다!");
@@ -161,14 +172,31 @@ function EventPageInner({ slug }: { slug: string }) {
     }
   };
 
-  const handleEditVerify = () => {
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleEditVerify = async () => {
     if (!event) return;
-    if (editEmail.toLowerCase() === event.organizerEmail.toLowerCase()) {
-      setShowEditDialog(false);
-      setEditEmail("");
-      router.push(`/create?edit=${event.slug}`);
-    } else {
-      toast.error("주최자 이메일이 일치하지 않습니다");
+    setIsVerifying(true);
+    try {
+      const res = await fetch(`/api/events/${event.slug}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: editEmail }),
+      });
+      if (res.ok) {
+        const { organizerEmail } = await res.json();
+        sessionStorage.setItem(`editEmail:${event.slug}`, organizerEmail);
+        setShowEditDialog(false);
+        setEditEmail("");
+        router.push(`/create?edit=${event.slug}`);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "주최자 이메일이 일치하지 않습니다");
+      }
+    } catch {
+      toast.error("인증에 실패했습니다");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -362,6 +390,7 @@ function EventPageInner({ slug }: { slug: string }) {
         open={showNameDialog}
         onOpenChange={setShowNameDialog}
         existingNames={event.participants.map((p) => p.name)}
+        slug={slug}
         onSubmit={handleNameSubmit}
       />
 
@@ -405,7 +434,10 @@ function EventPageInner({ slug }: { slug: string }) {
                 >
                   취소
                 </Button>
-                <Button size="sm" onClick={handleEditVerify}>
+                <Button size="sm" onClick={handleEditVerify} disabled={isVerifying}>
+                  {isVerifying ? (
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  ) : null}
                   확인
                 </Button>
               </div>

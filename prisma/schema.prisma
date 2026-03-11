@@ -42,6 +42,7 @@ model Participant {
   eventId   String
   name      String
   email     String   @default("")
+  editToken String   @default("")
   createdAt DateTime @default(now())
 
   event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)

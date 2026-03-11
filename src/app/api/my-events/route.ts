@@ -13,7 +13,12 @@ export async function GET(request: NextRequest) {
 
   const organized = await prisma.event.findMany({
     where: { organizerEmail: email },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      organizerName: true,
+      createdAt: true,
       participants: { select: { id: true } },
       dates: { select: { id: true } },
     },
@@ -24,7 +29,12 @@ export async function GET(request: NextRequest) {
     where: { email },
     include: {
       event: {
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          organizerName: true,
+          createdAt: true,
           participants: { select: { id: true } },
           dates: { select: { id: true } },
         },

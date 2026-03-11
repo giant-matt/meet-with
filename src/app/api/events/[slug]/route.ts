@@ -12,13 +12,30 @@ export async function GET(
 
     const event = await prisma.event.findUnique({
       where: { slug },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        organizerName: true,
+        mode: true,
+        timeRangeStart: true,
+        timeRangeEnd: true,
+        slotDuration: true,
+        timezone: true,
+        createdAt: true,
+        updatedAt: true,
         dates: {
+          select: { id: true, date: true },
           orderBy: { date: "asc" },
         },
         participants: {
-          include: {
-            responses: true,
+          select: {
+            id: true,
+            name: true,
+            responses: {
+              select: { eventDateId: true, startTime: true, endTime: true },
+            },
           },
           orderBy: { createdAt: "asc" },
         },

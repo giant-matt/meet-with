@@ -7,6 +7,7 @@ import { Copy, Check, Pencil, Save, X, Loader2, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -59,7 +60,8 @@ function EventPageInner({ slug }: { slug: string }) {
       if (!res.ok) throw new Error("약속을 찾을 수 없습니다");
       const data = await res.json();
       setEvent(data.event);
-    } catch {
+    } catch (error) {
+      console.error("fetchEvent error:", error);
       toast.error("약속을 불러올 수 없습니다");
     } finally {
       setLoading(false);
@@ -193,7 +195,8 @@ function EventPageInner({ slug }: { slug: string }) {
         const data = await res.json();
         toast.error(data.error || "주최자 이메일이 일치하지 않습니다");
       }
-    } catch {
+    } catch (error) {
+      console.error("verify error:", error);
       toast.error("인증에 실패했습니다");
     } finally {
       setIsVerifying(false);
@@ -206,7 +209,8 @@ function EventPageInner({ slug }: { slug: string }) {
       setCopied(true);
       toast.success("링크가 복사되었습니다");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (error) {
+      console.error("copy error:", error);
       toast.error("링크 복사에 실패했습니다");
     }
   };
@@ -274,7 +278,7 @@ function EventPageInner({ slug }: { slug: string }) {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowEditDialog(true)}
-                title="약속 수정"
+                aria-label="약속 수정"
               >
                 <Settings className="w-4 h-4 sm:mr-1" />
                 <span className="hidden sm:inline">약속 수정</span>
@@ -283,7 +287,7 @@ function EventPageInner({ slug }: { slug: string }) {
                 variant="outline"
                 size="sm"
                 onClick={handleCopyLink}
-                title={copied ? "복사됨" : "링크 복사"}
+                aria-label={copied ? "복사됨" : "링크 복사"}
               >
                 {copied ? (
                   <Check className="w-4 h-4 sm:mr-1" />
@@ -410,56 +414,53 @@ function EventPageInner({ slug }: { slug: string }) {
       />
 
       {/* Edit verification dialog */}
-      {showEditDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => {
-              setShowEditDialog(false);
-              setEditEmail("");
-            }}
-          />
-          <div className="relative bg-background rounded-lg shadow-lg p-6 w-full max-w-sm mx-4">
-            <h3 className="text-lg font-semibold mb-1">약속 수정</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+      <Dialog
+        open={showEditDialog}
+        onOpenChange={(open) => {
+          setShowEditDialog(open);
+          if (!open) setEditEmail("");
+        }}
+      >
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>약속 수정</DialogTitle>
+            <DialogDescription>
               주최자 이메일을 입력하여 본인 확인을 해주세요.
-            </p>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="edit-email">이메일</Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  placeholder="약속 생성 시 입력한 이메일"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleEditVerify()}
-                  className="mt-1"
-                  autoFocus
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowEditDialog(false);
-                    setEditEmail("");
-                  }}
-                >
-                  취소
-                </Button>
-                <Button size="sm" onClick={handleEditVerify} disabled={isVerifying}>
-                  {isVerifying ? (
-                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                  ) : null}
-                  확인
-                </Button>
-              </div>
-            </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <Label htmlFor="edit-email">이메일</Label>
+            <Input
+              id="edit-email"
+              type="email"
+              placeholder="약속 생성 시 입력한 이메일"
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleEditVerify()}
+              className="mt-1"
+              autoFocus
+            />
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowEditDialog(false);
+                setEditEmail("");
+              }}
+            >
+              취소
+            </Button>
+            <Button size="sm" onClick={handleEditVerify} disabled={isVerifying}>
+              {isVerifying ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : null}
+              확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -44,7 +44,8 @@ export default function MyEventsPage() {
       setOrganized(data.organized);
       setParticipated(data.participated);
       setSearched(true);
-    } catch {
+    } catch (error) {
+      console.error("search error:", error);
       toast.error("조회에 실패했습니다");
     } finally {
       setLoading(false);
@@ -114,6 +115,7 @@ export default function MyEventsPage() {
           <Button
             variant="ghost"
             size="sm"
+            aria-label={`${event.title} 삭제`}
             className="shrink-0 text-muted-foreground hover:text-destructive ml-2"
             onClick={(e) => {
               e.preventDefault();
@@ -191,15 +193,18 @@ export default function MyEventsPage() {
             )}
 
             {organized.length === 0 && participated.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-muted-foreground space-y-2">
+                <Search className="w-8 h-8 mx-auto opacity-50" />
                 <p>해당 이메일로 등록된 약속이 없습니다</p>
+                <p className="text-xs">다른 이메일로 다시 조회해보세요</p>
               </div>
             )}
           </div>
         )}
 
         {!searched && (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-12 text-muted-foreground space-y-2">
+            <CalendarDays className="w-8 h-8 mx-auto opacity-50" />
             <p>약속 생성 또는 참여 시 입력한 이메일로 조회하세요</p>
           </div>
         )}

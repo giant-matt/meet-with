@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import { ko } from "date-fns/locale";
@@ -37,6 +37,14 @@ function CreateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingEvent, setIsLoadingEvent] = useState(!!editSlug);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // Load existing event data in edit mode
   useEffect(() => {
@@ -67,7 +75,8 @@ function CreateForm() {
         setSelectedDates(
           event.dates.map((d: { date: string }) => new Date(d.date))
         );
-      } catch {
+      } catch (error) {
+        console.error("load event error:", error);
         toast.error("약속을 불러올 수 없습니다");
         router.push("/create");
       } finally {
@@ -310,7 +319,7 @@ function CreateForm() {
                   selected={selectedDates}
                   onSelect={(dates) => setSelectedDates(dates || [])}
                   locale={ko}
-                  numberOfMonths={2}
+                  numberOfMonths={isMobile ? 1 : 2}
                   disabled={{ before: new Date() }}
                 />
               </div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logError } from "@/lib/logger";
+import { emailsMatch } from "@/lib/email";
 
 const verifySchema = z.object({
   email: z.string().email("올바른 이메일을 입력해주세요"),
@@ -28,7 +29,7 @@ export async function POST(
       );
     }
 
-    if (data.email.toLowerCase() !== event.organizerEmail.toLowerCase()) {
+    if (!emailsMatch(data.email, event.organizerEmail)) {
       return NextResponse.json(
         { error: "주최자 이메일이 일치하지 않습니다" },
         { status: 403 }

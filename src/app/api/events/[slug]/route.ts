@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logError } from "@/lib/logger";
+import { emailsMatch } from "@/lib/email";
 import { z } from "zod";
 
 export async function GET(
@@ -94,7 +95,7 @@ export async function PUT(
     }
 
     // Verify organizer email
-    if (data.verifyEmail.toLowerCase() !== existing.organizerEmail.toLowerCase()) {
+    if (!emailsMatch(data.verifyEmail, existing.organizerEmail)) {
       return NextResponse.json(
         { error: "주최자 이메일이 일치하지 않습니다" },
         { status: 403 }
@@ -201,7 +202,7 @@ export async function DELETE(
       );
     }
 
-    if (email.toLowerCase() !== existing.organizerEmail.toLowerCase()) {
+    if (!emailsMatch(email, existing.organizerEmail)) {
       return NextResponse.json(
         { error: "주최자 이메일이 일치하지 않습니다" },
         { status: 403 }

@@ -88,7 +88,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-6">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          되는 시간 &mdash; 그룹 일정 조율 도구 &middot; &copy; All rights reserved. <a href="mailto:hwang@ulsan.ac.kr" className="hover:text-foreground transition-colors">hwang@ulsan.ac.kr</a>
+          되는 시간 &mdash; 그룹 일정 조율 도구 &middot; <Link href="/privacy" className="hover:text-foreground transition-colors">개인정보처리방침</Link> &middot; &copy; All rights reserved. <a href="mailto:hwang@ulsan.ac.kr" className="hover:text-foreground transition-colors">hwang@ulsan.ac.kr</a>
         </div>
       </footer>
     </div>

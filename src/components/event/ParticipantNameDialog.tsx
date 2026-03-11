@@ -108,6 +108,13 @@ export default function ParticipantNameDialog({
             </div>
           )}
         </div>
+        <p className="text-xs text-muted-foreground">
+          확인을 누르면{" "}
+          <a href="/privacy" target="_blank" className="underline text-foreground">
+            개인정보처리방침
+          </a>
+          에 동의하는 것으로 간주됩니다.
+        </p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             취소

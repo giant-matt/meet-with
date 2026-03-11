@@ -36,6 +36,7 @@ function CreateForm() {
   const [slotDuration, setSlotDuration] = useState(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingEvent, setIsLoadingEvent] = useState(!!editSlug);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   // Load existing event data in edit mode
   useEffect(() => {
@@ -94,6 +95,10 @@ function CreateForm() {
     }
     if (mode === "DATETIME" && timeRangeStart >= timeRangeEnd) {
       toast.error("종료 시간은 시작 시간보다 뒤여야 합니다");
+      return;
+    }
+    if (!editSlug && !agreedToPrivacy) {
+      toast.error("개인정보 수집·이용에 동의해주세요");
       return;
     }
 
@@ -405,6 +410,24 @@ function CreateForm() {
             <p className="text-sm text-muted-foreground text-center">
               날짜를 삭제하면 해당 날짜의 참여자 응답도 함께 삭제됩니다.
             </p>
+          )}
+
+          {/* 개인정보 동의 (신규 생성 시만) */}
+          {!editSlug && (
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToPrivacy}
+                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+              />
+              <span className="text-sm text-muted-foreground">
+                <Link href="/privacy" target="_blank" className="underline text-foreground">
+                  개인정보처리방침
+                </Link>
+                에 따라 이름과 이메일을 수집·이용하는 것에 동의합니다.
+              </span>
+            </label>
           )}
 
           {/* 제출 */}

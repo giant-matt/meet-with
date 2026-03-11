@@ -53,7 +53,7 @@ export default function MyEventsPage() {
 
   const handleDelete = async (slug: string, title: string) => {
     const confirmed = window.confirm(
-      `"${title}" 이벤트를 삭제하시겠습니까?\n모든 참여자 응답도 함께 삭제됩니다.`
+      `"${title}" 약속을 삭제하시겠습니까?\n모든 참여자 응답도 함께 삭제됩니다.`
     );
     if (!confirmed) return;
 
@@ -69,7 +69,7 @@ export default function MyEventsPage() {
         throw new Error(data.error || "삭제에 실패했습니다");
       }
 
-      toast.success("이벤트가 삭제되었습니다");
+      toast.success("약속이 삭제되었습니다");
       setOrganized((prev) => prev.filter((e) => e.slug !== slug));
     } catch (error) {
       toast.error(
@@ -135,13 +135,13 @@ export default function MyEventsPage() {
             되는 시간
           </Link>
           <Link href="/create">
-            <Button size="sm">새 이벤트 만들기</Button>
+            <Button size="sm">새 약속 만들기</Button>
           </Link>
         </div>
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">내 이벤트</h1>
+        <h1 className="text-2xl font-bold mb-6">내 약속</h1>
 
         <div className="flex gap-2 mb-8">
           <Input
@@ -167,7 +167,7 @@ export default function MyEventsPage() {
             {organized.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold mb-3">
-                  내가 만든 이벤트 ({organized.length})
+                  내가 만든 약속 ({organized.length})
                 </h2>
                 <div className="space-y-2">
                   {organized.map((event) => (
@@ -180,7 +180,7 @@ export default function MyEventsPage() {
             {participated.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold mb-3">
-                  참여한 이벤트 ({participated.length})
+                  참여한 약속 ({participated.length})
                 </h2>
                 <div className="space-y-2">
                   {participated.map((event) => (
@@ -192,7 +192,7 @@ export default function MyEventsPage() {
 
             {organized.length === 0 && participated.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
-                <p>해당 이메일로 등록된 이벤트가 없습니다</p>
+                <p>해당 이메일로 등록된 약속이 없습니다</p>
               </div>
             )}
           </div>
@@ -200,7 +200,7 @@ export default function MyEventsPage() {
 
         {!searched && (
           <div className="text-center py-12 text-muted-foreground">
-            <p>이벤트 생성 또는 참여 시 입력한 이메일로 조회하세요</p>
+            <p>약속 생성 또는 참여 시 입력한 이메일로 조회하세요</p>
           </div>
         )}
       </div>

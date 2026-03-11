@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Users, MousePointerClick, ArrowRight } from "lucide-react";
+import { CalendarDays, Users, Share2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -15,7 +15,7 @@ export default function Home() {
             href="/my-events"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            내 이벤트
+            내 약속
           </Link>
         </div>
       </header>
@@ -30,7 +30,7 @@ export default function Home() {
               <span className="text-primary/70">쉽고 빠르게</span> 찾기
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-lg mx-auto">
-              가입 없이 몇 초 만에 이벤트를 만들고,
+              가입 없이 몇 초 만에 약속을 만들고,
               <br />
               링크를 공유하여,
               <br />
@@ -39,7 +39,7 @@ export default function Home() {
             <div className="mt-8 flex gap-3 justify-center">
               <Link href="/create">
                 <Button size="lg" className="gap-2 bg-[#3A7D44] hover:bg-[#2E6436] text-white">
-                  새 이벤트 만들기
+                  새 약속 만들기
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -52,30 +52,33 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary mb-4">
                 <CalendarDays className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">간편한 이벤트 생성</h3>
+              <h3 className="font-semibold mb-2">간편한 약속 생성</h3>
               <p className="text-sm text-muted-foreground">
                 후보 날짜를 선택하고 시간 범위를 정하면 끝.
+                <br />
                 가입이나 로그인은 필요 없어요.
               </p>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary mb-4">
-                <MousePointerClick className="w-6 h-6" />
+                <Share2 className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">드래그로 시간 표시</h3>
+              <h3 className="font-semibold mb-2">링크 공유로 약속 공유</h3>
               <p className="text-sm text-muted-foreground">
-                직관적인 그리드에서 클릭 & 드래그로
-                되는 시간을 빠르게 표시하세요.
+                링크를 공유하여 참여자들의
+                <br />
+                &lsquo;되는 시간&rsquo;을 취합하세요.
               </p>
             </div>
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-secondary mb-4">
                 <Users className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">한눈에 보는 결과</h3>
+              <h3 className="font-semibold mb-2">한눈에 보이는 시간</h3>
               <p className="text-sm text-muted-foreground">
-                히트맵으로 겹치는 시간을 시각적으로 확인하고
-                최적의 시간을 추천받으세요.
+                히트맵으로 참여자들의 &lsquo;되는 시간&rsquo;을
+                <br />
+                실시간으로 확인하세요.
               </p>
             </div>
           </div>

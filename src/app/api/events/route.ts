@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     }
     logError("POST /api/events", error);
     return NextResponse.json(
-      { error: "이벤트 생성에 실패했습니다" },
+      { error: "약속 생성에 실패했습니다" },
       { status: 500 }
     );
   }

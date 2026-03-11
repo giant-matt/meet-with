@@ -57,11 +57,11 @@ function EventPageInner({ slug }: { slug: string }) {
   const fetchEvent = useCallback(async () => {
     try {
       const res = await fetch(`/api/events/${slug}`);
-      if (!res.ok) throw new Error("이벤트를 찾을 수 없습니다");
+      if (!res.ok) throw new Error("약속을 찾을 수 없습니다");
       const data = await res.json();
       setEvent(data.event);
     } catch {
-      toast.error("이벤트를 불러올 수 없습니다");
+      toast.error("약속을 불러올 수 없습니다");
     } finally {
       setLoading(false);
     }
@@ -195,7 +195,7 @@ function EventPageInner({ slug }: { slug: string }) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-lg text-muted-foreground">
-          이벤트를 찾을 수 없습니다
+          약속을 찾을 수 없습니다
         </p>
         <Link href="/">
           <Button variant="outline">홈으로 돌아가기</Button>
@@ -217,10 +217,10 @@ function EventPageInner({ slug }: { slug: string }) {
               href="/my-events"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              내 이벤트
+              내 약속
             </Link>
             <Link href="/create">
-              <Button size="sm">새 이벤트 만들기</Button>
+              <Button size="sm">새 약속 만들기</Button>
             </Link>
           </div>
         </div>
@@ -248,7 +248,7 @@ function EventPageInner({ slug }: { slug: string }) {
                 onClick={() => setShowEditDialog(true)}
               >
                 <Settings className="w-4 h-4 mr-1" />
-                이벤트 수정
+                약속 수정
               </Button>
               <Button
                 variant="outline"
@@ -376,7 +376,7 @@ function EventPageInner({ slug }: { slug: string }) {
             }}
           />
           <div className="relative bg-background rounded-lg shadow-lg p-6 w-full max-w-sm mx-4">
-            <h3 className="text-lg font-semibold mb-1">이벤트 수정</h3>
+            <h3 className="text-lg font-semibold mb-1">약속 수정</h3>
             <p className="text-sm text-muted-foreground mb-4">
               주최자 이메일을 입력하여 본인 확인을 해주세요.
             </p>
@@ -386,7 +386,7 @@ function EventPageInner({ slug }: { slug: string }) {
                 <Input
                   id="edit-email"
                   type="email"
-                  placeholder="이벤트 생성 시 입력한 이메일"
+                  placeholder="약속 생성 시 입력한 이메일"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleEditVerify()}

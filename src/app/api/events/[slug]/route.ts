@@ -27,7 +27,7 @@ export async function GET(
 
     if (!event) {
       return NextResponse.json(
-        { error: "이벤트를 찾을 수 없습니다" },
+        { error: "약속을 찾을 수 없습니다" },
         { status: 404 }
       );
     }
@@ -36,7 +36,7 @@ export async function GET(
   } catch (error) {
     logError("GET /api/events/[slug]", error);
     return NextResponse.json(
-      { error: "이벤트 조회에 실패했습니다" },
+      { error: "약속 조회에 실패했습니다" },
       { status: 500 }
     );
   }
@@ -71,7 +71,7 @@ export async function PUT(
 
     if (!existing) {
       return NextResponse.json(
-        { error: "이벤트를 찾을 수 없습니다" },
+        { error: "약속을 찾을 수 없습니다" },
         { status: 404 }
       );
     }
@@ -152,7 +152,7 @@ export async function PUT(
     }
     logError("PUT /api/events/[slug]", error);
     return NextResponse.json(
-      { error: "이벤트 수정에 실패했습니다" },
+      { error: "약속 수정에 실패했습니다" },
       { status: 500 }
     );
   }
@@ -179,7 +179,7 @@ export async function DELETE(
 
     if (!existing) {
       return NextResponse.json(
-        { error: "이벤트를 찾을 수 없습니다" },
+        { error: "약속을 찾을 수 없습니다" },
         { status: 404 }
       );
     }
@@ -197,7 +197,7 @@ export async function DELETE(
   } catch (error) {
     logError("DELETE /api/events/[slug]", error);
     return NextResponse.json(
-      { error: "이벤트 삭제에 실패했습니다" },
+      { error: "약속 삭제에 실패했습니다" },
       { status: 500 }
     );
   }

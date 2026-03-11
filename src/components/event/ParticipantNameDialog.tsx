@@ -65,7 +65,7 @@ export default function ParticipantNameDialog({
               className="mt-1"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              내 이벤트 목록 확인 시 사용됩니다
+              내 약속 목록 확인 시 사용됩니다
             </p>
           </div>
           {existingNames.length > 0 && (

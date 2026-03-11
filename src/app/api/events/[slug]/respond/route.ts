@@ -25,7 +25,7 @@ export async function POST(
 
     if (!event) {
       return NextResponse.json(
-        { error: "이벤트를 찾을 수 없습니다" },
+        { error: "약속을 찾을 수 없습니다" },
         { status: 404 }
       );
     }

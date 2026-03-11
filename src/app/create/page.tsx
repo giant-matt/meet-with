@@ -59,7 +59,7 @@ function CreateForm() {
           event.dates.map((d: { date: string }) => new Date(d.date))
         );
       } catch {
-        toast.error("이벤트를 불러올 수 없습니다");
+        toast.error("약속을 불러올 수 없습니다");
         router.push("/create");
       } finally {
         setIsLoadingEvent(false);
@@ -69,7 +69,7 @@ function CreateForm() {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      toast.error("이벤트 제목을 입력해주세요");
+      toast.error("약속 제목을 입력해주세요");
       return;
     }
     if (!organizerName.trim()) {
@@ -116,10 +116,10 @@ function CreateForm() {
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "이벤트 수정에 실패했습니다");
+          throw new Error(data.error || "약속 수정에 실패했습니다");
         }
 
-        toast.success("이벤트가 수정되었습니다!");
+        toast.success("약속이 수정되었습니다!");
         router.push(`/e/${editSlug}`);
       } else {
         // Create new event
@@ -141,11 +141,11 @@ function CreateForm() {
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "이벤트 생성에 실패했습니다");
+          throw new Error(data.error || "약속 생성에 실패했습니다");
         }
 
         const { event } = await res.json();
-        toast.success("이벤트가 생성되었습니다!");
+        toast.success("약속이 생성되었습니다!");
         router.push(`/e/${event.slug}?respond=organizer`);
       }
     } catch (error) {
@@ -171,11 +171,11 @@ function CreateForm() {
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          {editSlug ? "이벤트로 돌아가기" : "돌아가기"}
+          {editSlug ? "약속으로 돌아가기" : "돌아가기"}
         </Link>
 
         <h1 className="text-2xl font-bold mb-8">
-          {editSlug ? "이벤트 수정" : "새 이벤트 만들기"}
+          {editSlug ? "약속 수정" : "새 약속 만들기"}
         </h1>
 
         <div className="space-y-6">
@@ -189,7 +189,7 @@ function CreateForm() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="title">이벤트 제목</Label>
+                <Label htmlFor="title">약속 제목</Label>
                 <Input
                   id="title"
                   placeholder="예: 교육품질 제고를 위한 위원회"
@@ -219,14 +219,14 @@ function CreateForm() {
                   className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  내 이벤트 목록 확인 시 사용됩니다
+                  내 약속 목록 확인 시 사용됩니다
                 </p>
               </div>
               <div>
                 <Label htmlFor="desc">설명 (선택)</Label>
                 <Input
                   id="desc"
-                  placeholder="이벤트에 대한 간단한 설명"
+                  placeholder="약속에 대한 간단한 설명"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="mt-1"
@@ -296,6 +296,7 @@ function CreateForm() {
                   onSelect={(dates) => setSelectedDates(dates || [])}
                   locale={ko}
                   numberOfMonths={2}
+                  disabled={{ before: new Date() }}
                 />
               </div>
               {selectedDates.length > 0 && (
@@ -408,8 +409,8 @@ function CreateForm() {
                 ? "수정 중..."
                 : "생성 중..."
               : editSlug
-                ? "이벤트 수정하기"
-                : "이벤트 만들기"}
+                ? "약속 수정하기"
+                : "약속 만들기"}
           </Button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Users, Share2, ArrowRight } from "lucide-react";
+import { CalendarDays, Users, Share2, ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -36,11 +36,17 @@ export default function Home() {
               <br />
               모두가 가능한 &lsquo;되는 시간&rsquo;을 찾아보세요.
             </p>
-            <div className="mt-8 flex gap-3 justify-center">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 items-center justify-center">
               <Link href="/create">
                 <Button size="lg" className="gap-2 bg-[#3A7D44] hover:bg-[#2E6436] text-white">
                   새 약속 만들기
                   <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/guide">
+                <Button variant="outline" size="lg" className="gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  사용 가이드
                 </Button>
               </Link>
             </div>

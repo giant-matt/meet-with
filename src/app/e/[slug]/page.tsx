@@ -257,11 +257,11 @@ function EventPageInner({ slug }: { slug: string }) {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">{event.title}</h1>
+          <div className="flex items-start justify-between gap-2 sm:gap-4">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{event.title}</h1>
               {event.description && (
-                <p className="text-muted-foreground mt-1">
+                <p className="text-sm sm:text-base text-muted-foreground mt-1 line-clamp-2">
                   {event.description}
                 </p>
               )}
@@ -269,26 +269,28 @@ function EventPageInner({ slug }: { slug: string }) {
                 주최: {event.organizerName}
               </p>
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex gap-1.5 sm:gap-2 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowEditDialog(true)}
+                title="약속 수정"
               >
-                <Settings className="w-4 h-4 mr-1" />
-                약속 수정
+                <Settings className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">약속 수정</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopyLink}
+                title={copied ? "복사됨" : "링크 복사"}
               >
                 {copied ? (
-                  <Check className="w-4 h-4 mr-1" />
+                  <Check className="w-4 h-4 sm:mr-1" />
                 ) : (
-                  <Copy className="w-4 h-4 mr-1" />
+                  <Copy className="w-4 h-4 sm:mr-1" />
                 )}
-                {copied ? "복사됨" : "링크 복사"}
+                <span className="hidden sm:inline">{copied ? "복사됨" : "링크 복사"}</span>
               </Button>
             </div>
           </div>
@@ -297,18 +299,18 @@ function EventPageInner({ slug }: { slug: string }) {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
           {/* Main grid area */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base">
+            <CardHeader className="flex flex-row items-center justify-between pb-3 gap-2">
+              <CardTitle className="text-sm sm:text-base truncate">
                 {isEditing ? (
                   <span className="flex items-center gap-2">
-                    <Pencil className="w-4 h-4" />
-                    {participantName}님의 되는 시간
+                    <Pencil className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{participantName}님의 되는 시간</span>
                   </span>
                 ) : (
                   "되는 시간"
                 )}
               </CardTitle>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 sm:gap-2 shrink-0">
                 {isEditing ? (
                   <>
                     <Button
@@ -316,22 +318,23 @@ function EventPageInner({ slug }: { slug: string }) {
                       size="sm"
                       onClick={handleCancelEdit}
                     >
-                      <X className="w-4 h-4 mr-1" />
-                      취소
+                      <X className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">취소</span>
                     </Button>
                     <Button size="sm" onClick={handleSave} disabled={isSaving}>
                       {isSaving ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 sm:mr-1 animate-spin" />
                       ) : (
-                        <Save className="w-4 h-4 mr-1" />
+                        <Save className="w-4 h-4 sm:mr-1" />
                       )}
                       저장
                     </Button>
                   </>
                 ) : (
                   <Button size="sm" onClick={handleStartEdit}>
-                    <Pencil className="w-4 h-4 mr-1" />
-                    내 시간 입력하기
+                    <Pencil className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">내 시간 입력하기</span>
+                    <span className="sm:hidden">입력하기</span>
                   </Button>
                 )}
               </div>
@@ -355,6 +358,18 @@ function EventPageInner({ slug }: { slug: string }) {
                 onSlotsChange={setSelectedSlots}
                 highlightedParticipant={highlightedParticipant}
               />
+              {/* Empty state prompt */}
+              {!isEditing && event.participants.length === 0 && (
+                <div className="text-center py-6 space-y-3 border-t border-border/30 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    아직 아무도 응답하지 않았어요
+                  </p>
+                  <Button size="sm" onClick={handleStartEdit}>
+                    <Pencil className="w-4 h-4 mr-1" />
+                    첫 번째로 시간 입력하기
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 

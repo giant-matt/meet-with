@@ -226,6 +226,25 @@ export default function AvailabilityGrid({
     }
   };
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setCanScrollRight(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+  }, []);
+
+  // Check scroll on mount and resize
+  useState(() => {
+    if (typeof window === "undefined") return;
+    const handleResize = () => checkScroll();
+    window.addEventListener("resize", handleResize);
+    // Initial check after render
+    setTimeout(checkScroll, 100);
+    return () => window.removeEventListener("resize", handleResize);
+  });
+
   return (
     <div
       className="select-none relative"
@@ -236,14 +255,18 @@ export default function AvailabilityGrid({
         setHoveredCell(null);
       }}
     >
-      <div className="overflow-x-auto">
+      <div
+        ref={scrollContainerRef}
+        className="overflow-x-auto"
+        onScroll={checkScroll}
+      >
         <div
           className="grid min-w-fit"
           style={{
             gridTemplateColumns:
               mode === "DATE_ONLY"
-                ? `repeat(${dates.length}, minmax(80px, 1fr))`
-                : `60px repeat(${dates.length}, minmax(60px, 1fr))`,
+                ? `repeat(${dates.length}, minmax(64px, 1fr))`
+                : `48px repeat(${dates.length}, minmax(48px, 1fr))`,
           }}
         >
           {/* Header row */}
@@ -267,8 +290,8 @@ export default function AvailabilityGrid({
             <div key={`row-${rowIdx}`} className="contents">
               {mode !== "DATE_ONLY" && (
                 <div
-                  className="sticky left-0 bg-background z-10 text-xs text-muted-foreground pr-2 flex items-center justify-end border-b border-border/50"
-                  style={{ height: mode === "DATE_ONLY" ? "60px" : "50px" }}
+                  className="sticky left-0 bg-background z-10 text-[10px] sm:text-xs text-muted-foreground pr-1 sm:pr-2 flex items-center justify-end border-b border-border/50"
+                  style={{ height: "40px" }}
                 >
                   {rowIdx % (60 / slotDuration) === 0 && formatTime(slot.start)}
                 </div>
@@ -287,7 +310,7 @@ export default function AvailabilityGrid({
                         : ""
                     }`}
                     style={{
-                      height: mode === "DATE_ONLY" ? "60px" : "50px",
+                      height: mode === "DATE_ONLY" ? "48px" : "40px",
                       ...getCellStyle(d.id, slot.start),
                     }}
                     onPointerDown={(e) => {
@@ -322,11 +345,13 @@ export default function AvailabilityGrid({
       {hoveredCell && !isEditing && (() => {
         const names = heatmapData.get(hoveredCell) || [];
         if (names.length === 0) return null;
+        const gridWidth = gridRef.current?.clientWidth || 300;
+        const clampedX = Math.max(80, Math.min(tooltipPos.x, gridWidth - 80));
         return (
           <div
-            className="absolute z-50 pointer-events-none bg-foreground text-background text-xs rounded-md px-3 py-2 shadow-lg"
+            className="absolute z-50 pointer-events-none bg-foreground text-background text-xs rounded-md px-3 py-2 shadow-lg max-w-[200px]"
             style={{
-              left: tooltipPos.x,
+              left: clampedX,
               top: tooltipPos.y,
               transform: "translate(-50%, -100%)",
             }}
@@ -334,10 +359,17 @@ export default function AvailabilityGrid({
             <p className="font-medium">
               {names.length}/{participants.length}명 가능
             </p>
-            <p className="opacity-80">{names.join(", ")}</p>
+            <p className="opacity-80 break-words">{names.join(", ")}</p>
           </div>
         );
       })()}
+
+      {/* Scroll hint for mobile */}
+      {canScrollRight && (
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent pointer-events-none z-20 flex items-center justify-center sm:hidden">
+          <span className="text-muted-foreground text-xs animate-pulse">&rsaquo;</span>
+        </div>
+      )}
 
       {/* Heatmap Legend */}
       {!isEditing && participants.length > 0 && (

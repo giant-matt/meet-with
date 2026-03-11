@@ -21,8 +21,14 @@ export default function ParticipantList({
 }: ParticipantListProps) {
   if (participants.length === 0) {
     return (
-      <div className="text-sm text-muted-foreground text-center py-4">
-        아직 응답한 사람이 없습니다
+      <div className="text-center py-6 space-y-2">
+        <Users className="w-8 h-8 text-muted-foreground/40 mx-auto" />
+        <p className="text-sm text-muted-foreground">
+          아직 응답한 사람이 없습니다
+        </p>
+        <p className="text-xs text-muted-foreground/70">
+          링크를 공유하여 참여자를 초대하세요
+        </p>
       </div>
     );
   }

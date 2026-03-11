@@ -315,20 +315,18 @@ function EventPageInner({ slug }: { slug: string }) {
                       저장
                     </Button>
                   </>
+                ) : event.participants.length > 0 ? (
+                  <Button size="sm" onClick={handleStartEdit} className="bg-foreground hover:bg-foreground/80 text-background">
+                    <Pencil className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">내 가능시간 수정하기</span>
+                    <span className="sm:hidden">수정하기</span>
+                  </Button>
                 ) : (
-                  {event.participants.length > 0 ? (
-                    <Button size="sm" onClick={handleStartEdit} className="bg-foreground hover:bg-foreground/80 text-background">
-                      <Pencil className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">내 가능시간 수정하기</span>
-                      <span className="sm:hidden">수정하기</span>
-                    </Button>
-                  ) : (
-                    <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
-                      <Pencil className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">내 가능시간 입력하기</span>
-                      <span className="sm:hidden">입력하기</span>
-                    </Button>
-                  )}
+                  <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
+                    <Pencil className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">내 가능시간 입력하기</span>
+                    <span className="sm:hidden">입력하기</span>
+                  </Button>
                 )}
               </div>
             </CardHeader>

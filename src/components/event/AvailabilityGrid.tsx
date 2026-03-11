@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { generateTimeSlots, formatTime } from "@/lib/slots";
@@ -206,6 +206,52 @@ export default function AvailabilityGrid({
     };
   };
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, colIdx: number, rowIdx: number) => {
+      if (!isEditing) return;
+
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        const key = getCellKey(dates[colIdx].id, timeSlots[rowIdx].start);
+        const newSlots = new Set(selectedSlots);
+        if (newSlots.has(key)) {
+          newSlots.delete(key);
+        } else {
+          newSlots.add(key);
+        }
+        onSlotsChange(newSlots);
+        return;
+      }
+
+      let nextCol = colIdx;
+      let nextRow = rowIdx;
+
+      switch (e.key) {
+        case "ArrowUp":
+          nextRow = Math.max(0, rowIdx - 1);
+          break;
+        case "ArrowDown":
+          nextRow = Math.min(timeSlots.length - 1, rowIdx + 1);
+          break;
+        case "ArrowLeft":
+          nextCol = Math.max(0, colIdx - 1);
+          break;
+        case "ArrowRight":
+          nextCol = Math.min(dates.length - 1, colIdx + 1);
+          break;
+        default:
+          return;
+      }
+
+      e.preventDefault();
+      const nextCell = gridRef.current?.querySelector(
+        `[data-col="${nextCol}"][data-row="${nextRow}"]`
+      ) as HTMLElement | null;
+      nextCell?.focus();
+    },
+    [isEditing, dates, timeSlots, selectedSlots, onSlotsChange]
+  );
+
   const handleCellHover = (
     key: string,
     e: React.PointerEvent<HTMLDivElement>
@@ -236,19 +282,21 @@ export default function AvailabilityGrid({
   }, []);
 
   // Check scroll on mount and resize
-  useState(() => {
+  useEffect(() => {
     if (typeof window === "undefined") return;
     const handleResize = () => checkScroll();
     window.addEventListener("resize", handleResize);
     // Initial check after render
     setTimeout(checkScroll, 100);
     return () => window.removeEventListener("resize", handleResize);
-  });
+  }, [checkScroll]);
 
   return (
     <div
       className="select-none relative"
       ref={gridRef}
+      role="grid"
+      aria-label={isEditing ? "되는 시간 선택 그리드" : "참여자 가용 시간 그리드"}
       onPointerUp={handlePointerUp}
       onPointerLeave={() => {
         handlePointerUp();
@@ -276,6 +324,7 @@ export default function AvailabilityGrid({
           {dates.map((d) => (
             <div
               key={d.id}
+              role="columnheader"
               className="text-center text-xs font-medium py-2 border-b border-border"
             >
               <div>{format(new Date(d.date), "M/d", { locale: ko })}</div>
@@ -287,7 +336,7 @@ export default function AvailabilityGrid({
 
           {/* Time slots */}
           {timeSlots.map((slot, rowIdx) => (
-            <div key={`row-${rowIdx}`} className="contents">
+            <div key={`row-${rowIdx}`} role="row" className="contents">
               {mode !== "DATE_ONLY" && (
                 <div
                   className="sticky left-0 bg-background z-10 text-[10px] sm:text-xs text-muted-foreground pr-1 sm:pr-2 flex items-center justify-end border-b border-border/50"
@@ -301,18 +350,31 @@ export default function AvailabilityGrid({
                 const names = heatmapData.get(key) || [];
                 const count = names.length;
 
+                const dateLabel = format(new Date(d.date), "M/d EEE", { locale: ko });
+                const timeLabel = mode === "DATE_ONLY" ? "" : ` ${formatTime(slot.start)}`;
+                const cellLabel = isEditing
+                  ? `${dateLabel}${timeLabel} ${selectedSlots.has(key) ? "선택됨" : "선택 안 됨"}`
+                  : `${dateLabel}${timeLabel} ${count}/${participants.length}명 가능`;
+
                 return (
                   <div
                     key={key}
+                    role="gridcell"
+                    aria-label={cellLabel}
+                    aria-selected={isEditing ? selectedSlots.has(key) : undefined}
+                    tabIndex={isEditing && colIdx === 0 && rowIdx === 0 ? 0 : -1}
+                    data-col={colIdx}
+                    data-row={rowIdx}
                     className={`border-b border-r border-border/30 transition-colors relative ${
                       mode === "DATE_ONLY"
                         ? "flex items-center justify-center"
                         : ""
-                    }`}
+                    } ${isEditing ? "focus:outline-2 focus:outline-primary focus:outline-offset-[-2px] focus:z-10" : ""}`}
                     style={{
                       height: mode === "DATE_ONLY" ? "48px" : "40px",
                       ...getCellStyle(d.id, slot.start),
                     }}
+                    onKeyDown={(e) => handleKeyDown(e, colIdx, rowIdx)}
                     onPointerDown={(e) => {
                       e.preventDefault();
                       handlePointerDown(colIdx, rowIdx);

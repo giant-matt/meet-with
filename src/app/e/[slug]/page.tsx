@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, use, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Copy, Check, Pencil, Save, X, Loader2, Settings } from "lucide-react";
+import { Copy, Check, Pencil, Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +53,11 @@ function EventPageInner({ slug }: { slug: string }) {
   const [autoRespondHandled, setAutoRespondHandled] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editEmail, setEditEmail] = useState("");
+  const [isOrganizer, setIsOrganizer] = useState(false);
+
+  useEffect(() => {
+    setIsOrganizer(!!sessionStorage.getItem(`editEmail:${slug}`));
+  }, [slug]);
 
   const fetchEvent = useCallback(async () => {
     try {
@@ -273,17 +278,6 @@ function EventPageInner({ slug }: { slug: string }) {
                 주최: {event.organizerName}
               </p>
             </div>
-            <div className="flex gap-1.5 sm:gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowEditDialog(true)}
-                aria-label="약속 수정"
-              >
-                <Settings className="w-4 h-4 sm:mr-1" />
-                <span className="hidden sm:inline">약속 수정</span>
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -322,11 +316,19 @@ function EventPageInner({ slug }: { slug: string }) {
                     </Button>
                   </>
                 ) : (
-                  <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
-                    <Pencil className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">내 가능시간 입력하기</span>
-                    <span className="sm:hidden">입력하기</span>
-                  </Button>
+                  {event.participants.length > 0 ? (
+                    <Button size="sm" onClick={handleStartEdit} className="bg-foreground hover:bg-foreground/80 text-background">
+                      <Pencil className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">내 가능시간 수정하기</span>
+                      <span className="sm:hidden">수정하기</span>
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
+                      <Pencil className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">내 가능시간 입력하기</span>
+                      <span className="sm:hidden">입력하기</span>
+                    </Button>
+                  )}
                 )}
               </div>
             </CardHeader>
@@ -380,6 +382,14 @@ function EventPageInner({ slug }: { slug: string }) {
                   <p className="text-sm text-muted-foreground">
                     링크를 복사하여 약속에 참여해야 되는 분께 공유해 주세요
                   </p>
+                  {isOrganizer && (
+                    <button
+                      onClick={() => setShowEditDialog(true)}
+                      className="shrink-0 text-xs text-muted-foreground/60 hover:text-muted-foreground underline ml-auto"
+                    >
+                      약속 수정
+                    </button>
+                  )}
                 </div>
               )}
             </CardContent>

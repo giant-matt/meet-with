@@ -37,8 +37,8 @@ export default function Home() {
               모두가 가능한 &lsquo;되는 시간&rsquo;을 찾아보세요.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 items-center justify-center">
-              <Link href="/create">
-                <Button size="lg" className="gap-2 bg-[#3A7D44] hover:bg-[#2E6436] text-white">
+              <Link href="/create" className="cursor-pointer">
+                <Button size="lg" className="gap-2 cursor-pointer bg-[#3A7D44] hover:bg-[#2E6436] text-white">
                   새 약속 만들기
                   <ArrowRight className="w-4 h-4" />
                 </Button>

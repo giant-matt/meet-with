@@ -8,8 +8,9 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold">
+          <Link href="/" className="text-lg font-bold flex items-center gap-1.5">
             되는 시간
+            <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full leading-none">Beta</span>
           </Link>
           <Link
             href="/my-events"

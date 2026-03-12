@@ -247,7 +247,7 @@ function EventPageInner({ slug }: { slug: string }) {
       <header className="border-b border-border/50">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="text-lg font-bold">
-            되는 시간
+            언제되니
           </Link>
           <div className="flex items-center gap-3">
             <Link

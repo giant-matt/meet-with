@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "되는 시간 - 함께 만날 시간 찾기",
+  title: "언제되니 - 함께 만날 시간 찾기",
   description: "그룹 일정 조율 도구. 되는 시간을 표시하고 모두가 만날 수 있는 최적의 시간을 찾아보세요.",
 };
 

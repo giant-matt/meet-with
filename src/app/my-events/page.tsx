@@ -134,7 +134,7 @@ export default function MyEventsPage() {
       <header className="border-b border-border/50">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="text-lg font-bold">
-            되는 시간
+            언제되니
           </Link>
           <Link href="/create">
             <Button size="sm">새 약속 만들기</Button>

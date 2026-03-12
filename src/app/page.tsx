@@ -9,7 +9,7 @@ export default function Home() {
       <header className="border-b border-border/50">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="text-lg font-bold flex items-center gap-1.5">
-            되는 시간
+            언제되니
             <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full leading-none">Beta</span>
           </Link>
           <Link
@@ -35,7 +35,7 @@ export default function Home() {
               <br />
               링크를 공유하여,
               <br />
-              모두가 가능한 &lsquo;되는 시간&rsquo;을 찾아보세요.
+              모두가 가능한 시간을 찾아보세요.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 items-center justify-center">
               <Link href="/create" className="cursor-pointer">
@@ -68,7 +68,7 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">
                 링크를 공유하여 참여자들의
                 <br />
-                &lsquo;되는 시간&rsquo;을 취합하세요.
+                가능 시간을 취합하세요.
               </p>
             </div>
             <div className="text-center">
@@ -77,7 +77,7 @@ export default function Home() {
               </div>
               <h3 className="font-semibold mb-2">한눈에 보이는 시간</h3>
               <p className="text-sm text-muted-foreground">
-                히트맵으로 참여자들의 &lsquo;되는 시간&rsquo;을
+                히트맵으로 참여자들이 선택한 시간을
                 <br />
                 실시간으로 확인하세요.
               </p>
@@ -89,7 +89,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-6">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          되는 시간 &mdash; 그룹 일정 조율 도구 &middot; <Link href="/privacy" className="hover:text-foreground transition-colors">개인정보처리방침</Link> &middot; &copy; All rights reserved. <a href="mailto:hwang@ulsan.ac.kr" className="hover:text-foreground transition-colors">hwang@ulsan.ac.kr</a>
+          언제되니 &mdash; 그룹 일정 조율 도구 &middot; <Link href="/privacy" className="hover:text-foreground transition-colors">개인정보처리방침</Link> &middot; &copy; All rights reserved. <a href="mailto:hwang@ulsan.ac.kr" className="hover:text-foreground transition-colors">hwang@ulsan.ac.kr</a>
         </div>
       </footer>
     </div>

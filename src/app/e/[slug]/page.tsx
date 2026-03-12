@@ -306,13 +306,13 @@ function EventPageInner({ slug }: { slug: string }) {
                       <X className="w-4 h-4 sm:mr-1" />
                       <span className="hidden sm:inline">취소</span>
                     </Button>
-                    <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                    <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-[#B49A2C] hover:bg-[#9A8325] text-white">
                       {isSaving ? (
                         <Loader2 className="w-4 h-4 sm:mr-1 animate-spin" />
                       ) : (
                         <Save className="w-4 h-4 sm:mr-1" />
                       )}
-                      저장
+                      제출하기
                     </Button>
                   </>
                 ) : event.participants.length > 0 ? (

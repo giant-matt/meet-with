@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -34,6 +35,7 @@ export default function RootLayout({
           {children}
         </TooltipProvider>
         <Toaster richColors position="top-right" />
+        <Analytics />
       </body>
     </html>
   );

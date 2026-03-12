@@ -110,8 +110,7 @@ export default function BestTimeSection({
                 )}
               </div>
               <div
-                className="text-xs text-muted-foreground truncate cursor-default"
-                title={slot.names.join(", ")}
+                className="text-xs text-muted-foreground"
               >
                 {slot.count}/{totalParticipants}명 ·{" "}
                 {slot.names.join(", ")}

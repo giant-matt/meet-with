@@ -42,6 +42,9 @@ function getRateLimit(pathname: string, method: string): { max: number; windowMs
   if (method === "POST" && pathname.match(/^\/api\/events\/[^/]+\/respond$/)) {
     return { max: 20, windowMs: 60_000 }; // 20 req/min
   }
+  if (method === "GET" && pathname === "/api/admin/stats") {
+    return { max: 5, windowMs: 60_000 }; // 5 req/min — brute force protection
+  }
   if (method === "GET" && pathname === "/api/my-events") {
     return { max: 5, windowMs: 60_000 }; // 5 req/min — email enumeration protection
   }

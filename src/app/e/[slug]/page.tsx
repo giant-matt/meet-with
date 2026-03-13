@@ -316,7 +316,7 @@ function EventPageInner({ slug }: { slug: string }) {
                     </Button>
                   </>
                 ) : (
-                  <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
+                  <Button size="sm" onClick={handleStartEdit} className="bg-[#B49A2C] hover:bg-[#9A8325] text-white">
                     <Pencil className="w-4 h-4 sm:mr-1" />
                     <span className="hidden sm:inline">내 가능시간 입력하기</span>
                     <span className="sm:hidden">입력하기</span>
@@ -349,7 +349,7 @@ function EventPageInner({ slug }: { slug: string }) {
                   <p className="text-sm text-muted-foreground">
                     아직 아무도 응답하지 않았어요
                   </p>
-                  <Button size="sm" onClick={handleStartEdit} className="bg-[#3A7D44] hover:bg-[#2E6436] text-white">
+                  <Button size="sm" onClick={handleStartEdit} className="bg-[#B49A2C] hover:bg-[#9A8325] text-white">
                     <Pencil className="w-4 h-4 mr-1" />
                     첫 번째로 시간 입력하기
                   </Button>

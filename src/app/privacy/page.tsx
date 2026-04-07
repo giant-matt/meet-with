@@ -61,10 +61,15 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold mb-2">
               2. 개인정보 보유 및 이용 기간
             </h2>
-            <p className="text-sm text-muted-foreground">
-              수집된 개인정보는 약속이 삭제될 때까지 보유되며, 약속 삭제 시 모든
-              관련 데이터(참여자 정보, 응답)가 즉시 파기됩니다.
-            </p>
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <li>
+                약속의 모든 후보 날짜가 지난 후 7일이 경과하면 해당 약속과 관련된
+                모든 개인정보(참여자 정보, 응답)가 자동으로 파기됩니다.
+              </li>
+              <li>
+                약속 주최자가 직접 약속을 삭제하는 경우에도 즉시 파기됩니다.
+              </li>
+            </ul>
           </section>
 
           <section>

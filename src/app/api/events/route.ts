@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { logError } from "@/lib/logger";
+import { handleApiError } from "@/lib/api-errors";
 
 const createEventSchema = z.object({
   title: z.string().min(1, "제목을 입력해주세요"),
@@ -53,16 +53,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ event }, { status: 201 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: error.issues[0].message },
-        { status: 400 }
-      );
-    }
-    logError("POST /api/events", error);
-    return NextResponse.json(
-      { error: "약속 생성에 실패했습니다" },
-      { status: 500 }
-    );
+    return handleApiError("POST /api/events", error, "약속 생성에 실패했습니다");
   }
 }

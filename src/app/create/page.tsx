@@ -216,7 +216,11 @@ function CreateForm() {
 
   if (isLoadingEvent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        role="status"
+        aria-label="불러오는 중"
+      >
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -306,6 +310,7 @@ function CreateForm() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setMode("DATETIME")}
+                  aria-pressed={mode === "DATETIME"}
                   className={`p-4 rounded-lg border-2 text-left transition-colors ${
                     mode === "DATETIME"
                       ? "border-primary bg-primary/5"
@@ -319,6 +324,7 @@ function CreateForm() {
                 </button>
                 <button
                   onClick={() => setMode("DATE_ONLY")}
+                  aria-pressed={mode === "DATE_ONLY"}
                   className={`p-4 rounded-lg border-2 text-left transition-colors ${
                     mode === "DATE_ONLY"
                       ? "border-primary bg-primary/5"
@@ -377,6 +383,7 @@ function CreateForm() {
                               )
                             )
                           }
+                          aria-label={`${format(date, "M/d (EEE)", { locale: ko })} 날짜 삭제`}
                           className="text-muted-foreground hover:text-foreground ml-1"
                         >
                           &times;
@@ -400,8 +407,9 @@ function CreateForm() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>시작 시간</Label>
+                    <Label htmlFor="timeRangeStart">시작 시간</Label>
                     <select
+                      id="timeRangeStart"
                       value={timeRangeStart}
                       onChange={(e) => setTimeRangeStart(e.target.value)}
                       className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -414,8 +422,9 @@ function CreateForm() {
                     </select>
                   </div>
                   <div>
-                    <Label>종료 시간</Label>
+                    <Label htmlFor="timeRangeEnd">종료 시간</Label>
                     <select
+                      id="timeRangeEnd"
                       value={timeRangeEnd}
                       onChange={(e) => setTimeRangeEnd(e.target.value)}
                       className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -482,7 +491,11 @@ export default function CreatePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div
+          className="min-h-screen flex items-center justify-center"
+          role="status"
+          aria-label="불러오는 중"
+        >
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       }

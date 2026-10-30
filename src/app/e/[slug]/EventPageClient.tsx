@@ -191,7 +191,11 @@ function EventPageInner({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        role="status"
+        aria-label="불러오는 중"
+      >
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -399,7 +403,11 @@ export default function EventPageClient({ slug }: { slug: string }) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div
+          className="min-h-screen flex items-center justify-center"
+          role="status"
+          aria-label="불러오는 중"
+        >
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       }

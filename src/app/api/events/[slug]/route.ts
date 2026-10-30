@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { logError } from "@/lib/logger";
 import { z } from "zod";
+import { handleApiError, jsonError, isValidHostToken } from "@/lib/api-errors";
 
 export async function GET(
   request: Request,
@@ -46,10 +46,7 @@ export async function GET(
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "약속을 찾을 수 없습니다" },
-        { status: 404 }
-      );
+      return jsonError("약속을 찾을 수 없습니다", 404);
     }
 
     // organizerEmail/hostToken은 주최자 본인(올바른 hostToken 제공)에게만 노출
@@ -75,10 +72,10 @@ export async function GET(
       },
     });
   } catch (error) {
-    logError("GET /api/events/[slug]", error);
-    return NextResponse.json(
-      { error: "약속 조회에 실패했습니다" },
-      { status: 500 }
+    return handleApiError(
+      "GET /api/events/[slug]",
+      error,
+      "약속 조회에 실패했습니다"
     );
   }
 }
@@ -111,15 +108,12 @@ export async function PUT(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "약속을 찾을 수 없습니다" },
-        { status: 404 }
-      );
+      return jsonError("약속을 찾을 수 없습니다", 404);
     }
 
     // Verify host token
-    if (!existing.hostToken || data.hostToken !== existing.hostToken) {
-      return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
+    if (!isValidHostToken(existing.hostToken, data.hostToken)) {
+      return jsonError("권한이 없습니다", 403);
     }
 
     // Build update payload
@@ -175,16 +169,10 @@ export async function PUT(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: error.issues[0].message },
-        { status: 400 }
-      );
-    }
-    logError("PUT /api/events/[slug]", error);
-    return NextResponse.json(
-      { error: "약속 수정에 실패했습니다" },
-      { status: 500 }
+    return handleApiError(
+      "PUT /api/events/[slug]",
+      error,
+      "약속 수정에 실패했습니다"
     );
   }
 }
@@ -198,7 +186,7 @@ export async function DELETE(
     const { hostToken } = await request.json();
 
     if (!hostToken) {
-      return NextResponse.json({ error: "권한이 없습니다" }, { status: 400 });
+      return jsonError("권한이 없습니다", 400);
     }
 
     const existing = await prisma.event.findUnique({
@@ -206,24 +194,21 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "약속을 찾을 수 없습니다" },
-        { status: 404 }
-      );
+      return jsonError("약속을 찾을 수 없습니다", 404);
     }
 
-    if (!existing.hostToken || hostToken !== existing.hostToken) {
-      return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
+    if (!isValidHostToken(existing.hostToken, hostToken)) {
+      return jsonError("권한이 없습니다", 403);
     }
 
     await prisma.event.delete({ where: { slug } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    logError("DELETE /api/events/[slug]", error);
-    return NextResponse.json(
-      { error: "약속 삭제에 실패했습니다" },
-      { status: 500 }
+    return handleApiError(
+      "DELETE /api/events/[slug]",
+      error,
+      "약속 삭제에 실패했습니다"
     );
   }
 }

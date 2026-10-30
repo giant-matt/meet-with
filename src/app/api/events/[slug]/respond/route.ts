@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { logError } from "@/lib/logger";
+import { handleApiError, jsonError } from "@/lib/api-errors";
 
 const timeSchema = z
   .string()
@@ -32,19 +32,13 @@ export async function POST(
     });
 
     if (!event) {
-      return NextResponse.json(
-        { error: "약속을 찾을 수 없습니다" },
-        { status: 404 }
-      );
+      return jsonError("약속을 찾을 수 없습니다", 404);
     }
 
     const validDateIds = new Set(event.dates.map((d) => d.id));
     for (const dateId of Object.keys(data.availability)) {
       if (!validDateIds.has(dateId)) {
-        return NextResponse.json(
-          { error: "유효하지 않은 날짜입니다" },
-          { status: 400 }
-        );
+        return jsonError("유효하지 않은 날짜입니다", 400);
       }
     }
 
@@ -65,9 +59,9 @@ export async function POST(
       // Existing participant: verify editToken
       if (existing.editToken && existing.editToken !== "") {
         if (!data.editToken || data.editToken !== existing.editToken) {
-          return NextResponse.json(
-            { error: "이 이름으로 이미 응답이 등록되어 있습니다. 같은 기기에서만 수정할 수 있습니다." },
-            { status: 403 }
+          return jsonError(
+            "이 이름으로 이미 응답이 등록되어 있습니다. 같은 기기에서만 수정할 수 있습니다.",
+            403
           );
         }
       }
@@ -132,16 +126,10 @@ export async function POST(
       ...(newEditToken ? { editToken: newEditToken } : {}),
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: error.issues[0].message },
-        { status: 400 }
-      );
-    }
-    logError("POST /api/events/[slug]/respond", error);
-    return NextResponse.json(
-      { error: "응답 저장에 실패했습니다" },
-      { status: 500 }
+    return handleApiError(
+      "POST /api/events/[slug]/respond",
+      error,
+      "응답 저장에 실패했습니다"
     );
   }
 }

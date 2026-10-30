@@ -69,6 +69,7 @@ export default function AdminPage() {
             <Input
               type="password"
               placeholder="비밀번호"
+              aria-label="비밀번호"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}

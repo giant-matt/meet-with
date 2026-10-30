@@ -155,7 +155,11 @@ export default function MyEventsPage() {
         </p>
 
         {loading && (
-          <div className="flex justify-center py-12">
+          <div
+            className="flex justify-center py-12"
+            role="status"
+            aria-label="불러오는 중"
+          >
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
         )}

@@ -1,24 +1,5 @@
-import fs from "fs";
-import path from "path";
-
-const LOG_FILE = path.join(process.cwd(), "error.log");
-
 export function logError(context: string, error: unknown) {
-  const timestamp = new Date().toLocaleString("ko-KR", {
-    timeZone: "Asia/Seoul",
-  });
-  const message =
-    error instanceof Error
-      ? `${error.message}\n  ${error.stack}`
-      : String(error);
-
-  const logLine = `[${timestamp}] [${context}]\n${message}\n${"─".repeat(60)}\n`;
-
+  // console.error는 Vercel 함수 로그로 수집된다 — 서버리스 환경에서는
+  // 로컬 파일 쓰기가 배포마다 초기화되어 남지 않으므로 쓰지 않는다.
   console.error(`[${context}]`, error);
-
-  try {
-    fs.appendFileSync(LOG_FILE, logLine, "utf-8");
-  } catch {
-    // 파일 쓰기 실패 시 무시
-  }
 }

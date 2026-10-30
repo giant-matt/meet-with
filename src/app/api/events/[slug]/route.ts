@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logError } from "@/lib/logger";
-import { emailsMatch } from "@/lib/email";
 import { z } from "zod";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params;
+    const hostToken = new URL(request.url).searchParams.get("hostToken");
 
     const event = await prisma.event.findUnique({
       where: { slug },
@@ -19,6 +19,8 @@ export async function GET(
         slug: true,
         description: true,
         organizerName: true,
+        organizerEmail: true,
+        hostToken: true,
         mode: true,
         timeRangeStart: true,
         timeRangeEnd: true,
@@ -50,7 +52,28 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ event });
+    // organizerEmail/hostToken은 주최자 본인(올바른 hostToken 제공)에게만 노출
+    const isHost = !!hostToken && !!event.hostToken && hostToken === event.hostToken;
+
+    return NextResponse.json({
+      event: {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        description: event.description,
+        organizerName: event.organizerName,
+        ...(isHost ? { organizerEmail: event.organizerEmail } : {}),
+        mode: event.mode,
+        timeRangeStart: event.timeRangeStart,
+        timeRangeEnd: event.timeRangeEnd,
+        slotDuration: event.slotDuration,
+        timezone: event.timezone,
+        createdAt: event.createdAt,
+        updatedAt: event.updatedAt,
+        dates: event.dates,
+        participants: event.participants,
+      },
+    });
   } catch (error) {
     logError("GET /api/events/[slug]", error);
     return NextResponse.json(
@@ -61,7 +84,7 @@ export async function GET(
 }
 
 const updateEventSchema = z.object({
-  verifyEmail: z.string().email("이메일 인증이 필요합니다"),
+  hostToken: z.string().min(1, "권한이 없습니다"),
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   organizerName: z.string().min(1).optional(),
@@ -94,12 +117,9 @@ export async function PUT(
       );
     }
 
-    // Verify organizer email
-    if (!emailsMatch(data.verifyEmail, existing.organizerEmail)) {
-      return NextResponse.json(
-        { error: "주최자 이메일이 일치하지 않습니다" },
-        { status: 403 }
-      );
+    // Verify host token
+    if (!existing.hostToken || data.hostToken !== existing.hostToken) {
+      return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
     }
 
     // Build update payload
@@ -148,19 +168,12 @@ export async function PUT(
       }
     }
 
-    const event = await prisma.event.update({
+    await prisma.event.update({
       where: { slug },
       data: updateData,
-      include: {
-        dates: { orderBy: { date: "asc" } },
-        participants: {
-          include: { responses: true },
-          orderBy: { createdAt: "asc" },
-        },
-      },
     });
 
-    return NextResponse.json({ event });
+    return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -182,13 +195,10 @@ export async function DELETE(
 ) {
   try {
     const { slug } = await params;
-    const { email } = await request.json();
+    const { hostToken } = await request.json();
 
-    if (!email) {
-      return NextResponse.json(
-        { error: "이메일 인증이 필요합니다" },
-        { status: 400 }
-      );
+    if (!hostToken) {
+      return NextResponse.json({ error: "권한이 없습니다" }, { status: 400 });
     }
 
     const existing = await prisma.event.findUnique({
@@ -202,11 +212,8 @@ export async function DELETE(
       );
     }
 
-    if (!emailsMatch(email, existing.organizerEmail)) {
-      return NextResponse.json(
-        { error: "주최자 이메일이 일치하지 않습니다" },
-        { status: 403 }
-      );
+    if (!existing.hostToken || hostToken !== existing.hostToken) {
+      return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
     }
 
     await prisma.event.delete({ where: { slug } });

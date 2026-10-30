@@ -47,15 +47,16 @@ export default function AvailabilityGrid({
   onSlotsChange,
   highlightedParticipant,
 }: AvailabilityGridProps) {
-  const isDraggingRef = useRef(false);
-  const dragModeRef = useRef<"add" | "remove">("add");
-  const dragStartRef = useRef<{ col: number; row: number } | null>(null);
-  const dragCurrentRef = useRef<{ col: number; row: number } | null>(null);
-  const [, forceUpdate] = useState(0);
+  const [drag, setDrag] = useState<{
+    mode: "add" | "remove";
+    start: { col: number; row: number };
+    current: { col: number; row: number };
+  } | null>(null);
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number; gridWidth: number }>({
     x: 0,
     y: 0,
+    gridWidth: 300,
   });
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -89,60 +90,48 @@ export default function AvailabilityGrid({
   const getCellKey = (dateId: string, startTime: string) =>
     `${dateId}-${startTime}`;
 
-  const getDragRange = useCallback(() => {
-    if (!dragStartRef.current || !dragCurrentRef.current)
-      return new Set<string>();
-    const minCol = Math.min(
-      dragStartRef.current.col,
-      dragCurrentRef.current.col
-    );
-    const maxCol = Math.max(
-      dragStartRef.current.col,
-      dragCurrentRef.current.col
-    );
-    const minRow = Math.min(
-      dragStartRef.current.row,
-      dragCurrentRef.current.row
-    );
-    const maxRow = Math.max(
-      dragStartRef.current.row,
-      dragCurrentRef.current.row
-    );
+  const getDragRange = useCallback(
+    (start: { col: number; row: number }, current: { col: number; row: number }) => {
+      const minCol = Math.min(start.col, current.col);
+      const maxCol = Math.max(start.col, current.col);
+      const minRow = Math.min(start.row, current.row);
+      const maxRow = Math.max(start.row, current.row);
 
-    const keys = new Set<string>();
-    for (let c = minCol; c <= maxCol; c++) {
-      for (let r = minRow; r <= maxRow; r++) {
-        if (c < dates.length && r < timeSlots.length) {
-          keys.add(getCellKey(dates[c].id, timeSlots[r].start));
+      const keys = new Set<string>();
+      for (let c = minCol; c <= maxCol; c++) {
+        for (let r = minRow; r <= maxRow; r++) {
+          if (c < dates.length && r < timeSlots.length) {
+            keys.add(getCellKey(dates[c].id, timeSlots[r].start));
+          }
         }
       }
-    }
-    return keys;
-  }, [dates, timeSlots]);
+      return keys;
+    },
+    [dates, timeSlots]
+  );
 
   const handlePointerDown = (col: number, row: number) => {
     if (!isEditing) return;
     const key = getCellKey(dates[col].id, timeSlots[row].start);
-    dragModeRef.current = selectedSlots.has(key) ? "remove" : "add";
-    isDraggingRef.current = true;
-    dragStartRef.current = { col, row };
-    dragCurrentRef.current = { col, row };
-    forceUpdate((n) => n + 1);
+    setDrag({
+      mode: selectedSlots.has(key) ? "remove" : "add",
+      start: { col, row },
+      current: { col, row },
+    });
   };
 
   const handlePointerMove = (col: number, row: number) => {
-    if (!isDraggingRef.current || !isEditing) return;
-    dragCurrentRef.current = { col, row };
-    forceUpdate((n) => n + 1);
+    if (!drag || !isEditing) return;
+    setDrag((prev) => (prev ? { ...prev, current: { col, row } } : prev));
   };
 
   const handlePointerUp = () => {
-    if (!isDraggingRef.current || !isEditing) return;
-    const range = getDragRange();
+    if (!drag || !isEditing) return;
+    const range = getDragRange(drag.start, drag.current);
     const newSlots = new Set(selectedSlots);
 
     range.forEach((key) => {
-      if (dragModeRef.current === "add") {
+      if (drag.mode === "add") {
         newSlots.add(key);
       } else {
         newSlots.delete(key);
@@ -150,16 +139,16 @@ export default function AvailabilityGrid({
     });
 
     onSlotsChange(newSlots);
-    isDraggingRef.current = false;
-    dragStartRef.current = null;
-    dragCurrentRef.current = null;
-    forceUpdate((n) => n + 1);
+    setDrag(null);
   };
 
-  const dragRange = isDraggingRef.current ? getDragRange() : new Set<string>();
+  const dragRange = useMemo(
+    () => (drag ? getDragRange(drag.start, drag.current) : new Set<string>()),
+    [drag, getDragRange]
+  );
 
   const isCellInDragPreview = (key: string) => {
-    if (!isDraggingRef.current) return false;
+    if (!drag) return false;
     return dragRange.has(key);
   };
 
@@ -183,7 +172,7 @@ export default function AvailabilityGrid({
       if (inDrag) {
         return {
           backgroundColor:
-            dragModeRef.current === "add" ? "hsl(217, 80%, 75%)" : "hsl(0, 70%, 90%)",
+            drag?.mode === "add" ? "hsl(217, 80%, 75%)" : "hsl(0, 70%, 90%)",
           cursor: "pointer",
         };
       }
@@ -256,7 +245,7 @@ export default function AvailabilityGrid({
     key: string,
     e: React.PointerEvent<HTMLDivElement>
   ) => {
-    if (isEditing || isDraggingRef.current) return;
+    if (isEditing || drag) return;
     const names = heatmapData.get(key) || [];
     if (names.length === 0) {
       setHoveredCell(null);
@@ -268,6 +257,7 @@ export default function AvailabilityGrid({
       setTooltipPos({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top - 10,
+        gridWidth: gridRef.current?.clientWidth || 300,
       });
     }
   };
@@ -407,8 +397,7 @@ export default function AvailabilityGrid({
       {hoveredCell && !isEditing && (() => {
         const names = heatmapData.get(hoveredCell) || [];
         if (names.length === 0) return null;
-        const gridWidth = gridRef.current?.clientWidth || 300;
-        const clampedX = Math.max(80, Math.min(tooltipPos.x, gridWidth - 80));
+        const clampedX = Math.max(80, Math.min(tooltipPos.x, tooltipPos.gridWidth - 80));
         return (
           <div
             className="absolute z-50 pointer-events-none bg-foreground text-background text-xs rounded-md px-3 py-2 shadow-lg max-w-[200px]"

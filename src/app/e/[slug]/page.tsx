@@ -7,14 +7,12 @@ import { Copy, Check, Pencil, Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 import AvailabilityGrid from "@/components/event/AvailabilityGrid";
 import ParticipantList from "@/components/event/ParticipantList";
 import ParticipantNameDialog from "@/components/event/ParticipantNameDialog";
 import BestTimeSection from "@/components/event/BestTimeSection";
+import { rememberEvent, getHostToken } from "@/lib/myEvents";
 
 interface EventData {
   id: string;
@@ -51,12 +49,10 @@ function EventPageInner({ slug }: { slug: string }) {
     string | null
   >(null);
   const [autoRespondHandled, setAutoRespondHandled] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editEmail, setEditEmail] = useState("");
   const [isOrganizer, setIsOrganizer] = useState(false);
 
   useEffect(() => {
-    setIsOrganizer(!!sessionStorage.getItem(`editEmail:${slug}`));
+    queueMicrotask(() => setIsOrganizer(!!getHostToken(slug)));
   }, [slug]);
 
   const fetchEvent = useCallback(async () => {
@@ -74,22 +70,23 @@ function EventPageInner({ slug }: { slug: string }) {
   }, [slug]);
 
   useEffect(() => {
-    fetchEvent();
+    queueMicrotask(() => fetchEvent());
   }, [fetchEvent]);
 
   // Auto-enter edit mode for organizer after event creation
   useEffect(() => {
     if (autoRespondHandled || !event || loading) return;
-    if (searchParams.get("respond") === "organizer") {
+    if (searchParams.get("respond") !== "organizer") return;
+    queueMicrotask(() => {
       setParticipantName(event.organizerName);
-      const savedEmail = sessionStorage.getItem(`respondEmail:${slug}`);
+      const savedEmail = localStorage.getItem(`respondEmail:${slug}`);
       setParticipantEmail(savedEmail || "");
-      sessionStorage.removeItem(`respondEmail:${slug}`);
+      localStorage.removeItem(`respondEmail:${slug}`);
       setIsEditing(true);
       setAutoRespondHandled(true);
       // Clean up URL
       window.history.replaceState({}, "", `/e/${slug}`);
-    }
+    });
   }, [event, loading, autoRespondHandled, searchParams, slug]);
 
   const handleStartEdit = () => {
@@ -165,6 +162,7 @@ function EventPageInner({ slug }: { slug: string }) {
       }
 
       toast.success("저장되었습니다!");
+      rememberEvent(slug);
       setIsEditing(false);
       setSelectedSlots(new Set());
       setParticipantName("");
@@ -176,35 +174,6 @@ function EventPageInner({ slug }: { slug: string }) {
       );
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  const handleEditVerify = async () => {
-    if (!event) return;
-    setIsVerifying(true);
-    try {
-      const res = await fetch(`/api/events/${event.slug}/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: editEmail }),
-      });
-      if (res.ok) {
-        const { organizerEmail } = await res.json();
-        sessionStorage.setItem(`editEmail:${event.slug}`, organizerEmail);
-        setShowEditDialog(false);
-        setEditEmail("");
-        router.push(`/create?edit=${event.slug}`);
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "주최자 이메일이 일치하지 않습니다");
-      }
-    } catch (error) {
-      console.error("verify error:", error);
-      toast.error("인증에 실패했습니다");
-    } finally {
-      setIsVerifying(false);
     }
   };
 
@@ -376,7 +345,7 @@ function EventPageInner({ slug }: { slug: string }) {
                   </p>
                   {isOrganizer && (
                     <button
-                      onClick={() => setShowEditDialog(true)}
+                      onClick={() => router.push(`/create?edit=${event.slug}`)}
                       className="shrink-0 text-xs text-muted-foreground/60 hover:text-muted-foreground underline ml-auto"
                     >
                       약속 수정
@@ -422,55 +391,6 @@ function EventPageInner({ slug }: { slug: string }) {
         slug={slug}
         onSubmit={handleNameSubmit}
       />
-
-      {/* Edit verification dialog */}
-      <Dialog
-        open={showEditDialog}
-        onOpenChange={(open) => {
-          setShowEditDialog(open);
-          if (!open) setEditEmail("");
-        }}
-      >
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>약속 수정</DialogTitle>
-            <DialogDescription>
-              주최자 이메일을 입력하여 본인 확인을 해주세요.
-            </DialogDescription>
-          </DialogHeader>
-          <div>
-            <Label htmlFor="edit-email">이메일</Label>
-            <Input
-              id="edit-email"
-              type="email"
-              placeholder="약속 생성 시 입력한 이메일"
-              value={editEmail}
-              onChange={(e) => setEditEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleEditVerify()}
-              className="mt-1"
-              autoFocus
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowEditDialog(false);
-                setEditEmail("");
-              }}
-            >
-              취소
-            </Button>
-            <Button size="sm" onClick={handleEditVerify} disabled={isVerifying}>
-              {isVerifying ? (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              ) : null}
-              확인
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { rememberEvent, getHostToken, setHostToken } from "@/lib/myEvents";
 import "react-day-picker/style.css";
 
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
@@ -50,9 +51,8 @@ function CreateForm() {
   useEffect(() => {
     if (!editSlug) return;
 
-    // organizerEmail은 보안상 API 응답에 포함되지 않으므로 sessionStorage에서 읽음
-    const savedEmail = sessionStorage.getItem(`editEmail:${editSlug}`);
-    if (!savedEmail) {
+    const hostToken = getHostToken(editSlug);
+    if (!hostToken) {
       toast.error("약속 수정 권한이 없습니다");
       router.push(`/e/${editSlug}`);
       return;
@@ -60,13 +60,15 @@ function CreateForm() {
 
     (async () => {
       try {
-        const res = await fetch(`/api/events/${editSlug}`);
+        const res = await fetch(
+          `/api/events/${editSlug}?hostToken=${encodeURIComponent(hostToken)}`
+        );
         if (!res.ok) throw new Error();
         const { event } = await res.json();
 
         setTitle(event.title);
         setOrganizerName(event.organizerName);
-        setOrganizerEmail(savedEmail);
+        setOrganizerEmail(event.organizerEmail || "");
         setDescription(event.description || "");
         setMode(event.mode);
         setTimeRangeStart(event.timeRangeStart);
@@ -150,11 +152,12 @@ function CreateForm() {
 
       if (editSlug) {
         // Update existing event
+        const hostToken = getHostToken(editSlug);
         const res = await fetch(`/api/events/${editSlug}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            verifyEmail: organizerEmail.trim(),
+            hostToken,
             title: title.trim(),
             organizerName: organizerName.trim(),
             organizerEmail: organizerEmail.trim(),
@@ -199,8 +202,9 @@ function CreateForm() {
 
         const { event } = await res.json();
         toast.success("약속이 생성되었습니다!");
-        sessionStorage.setItem(`respondEmail:${event.slug}`, organizerEmail.trim());
-        sessionStorage.setItem(`editEmail:${event.slug}`, organizerEmail.trim());
+        setHostToken(event.slug, event.hostToken);
+        rememberEvent(event.slug);
+        localStorage.setItem(`respondEmail:${event.slug}`, organizerEmail.trim());
         router.push(`/e/${event.slug}?respond=organizer`);
       }
     } catch (error) {
@@ -274,7 +278,7 @@ function CreateForm() {
                   className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  내 약속 목록 확인 시 사용됩니다
+                  연락용으로만 보관되며, 약속 수정·삭제는 생성 후 받는 비밀 링크로 합니다
                 </p>
               </div>
               <div>

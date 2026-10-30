@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { toast } from "sonner";
-import { Search, CalendarDays, Users, Loader2, Trash2 } from "lucide-react";
+import { CalendarDays, Users, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { listRememberedEvents, getHostToken, forgetEvent } from "@/lib/myEvents";
 
 interface EventItem {
   id: string;
@@ -22,35 +22,40 @@ interface EventItem {
 }
 
 export default function MyEventsPage() {
-  const [email, setEmail] = useState("");
   const [organized, setOrganized] = useState<EventItem[]>([]);
   const [participated, setParticipated] = useState<EventItem[]>([]);
-  const [searched, setSearched] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = async () => {
-    if (!email.trim()) {
-      toast.error("이메일을 입력해주세요");
+  useEffect(() => {
+    const slugs = listRememberedEvents();
+    if (slugs.length === 0) {
+      queueMicrotask(() => setLoading(false));
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/my-events?email=${encodeURIComponent(email.trim())}`
+    (async () => {
+      const results = await Promise.all(
+        slugs.map(async (slug) => {
+          try {
+            const res = await fetch(`/api/events/${slug}`);
+            if (!res.ok) {
+              forgetEvent(slug);
+              return null;
+            }
+            const { event } = await res.json();
+            return event as EventItem;
+          } catch {
+            return null;
+          }
+        })
       );
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setOrganized(data.organized);
-      setParticipated(data.participated);
-      setSearched(true);
-    } catch (error) {
-      console.error("search error:", error);
-      toast.error("조회에 실패했습니다");
-    } finally {
+
+      const found = results.filter((e): e is EventItem => e !== null);
+      setOrganized(found.filter((e) => !!getHostToken(e.slug)));
+      setParticipated(found.filter((e) => !getHostToken(e.slug)));
       setLoading(false);
-    }
-  };
+    })();
+  }, []);
 
   const handleDelete = async (slug: string, title: string) => {
     const confirmed = window.confirm(
@@ -62,7 +67,7 @@ export default function MyEventsPage() {
       const res = await fetch(`/api/events/${slug}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ hostToken: getHostToken(slug) }),
       });
 
       if (!res.ok) {
@@ -70,6 +75,7 @@ export default function MyEventsPage() {
         throw new Error(data.error || "삭제에 실패했습니다");
       }
 
+      forgetEvent(slug);
       toast.success("약속이 삭제되었습니다");
       setOrganized((prev) => prev.filter((e) => e.slug !== slug));
     } catch (error) {
@@ -144,27 +150,17 @@ export default function MyEventsPage() {
 
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">내 약속</h1>
+        <p className="text-xs text-muted-foreground mb-6">
+          이 기기에서 만들거나 참여한 약속만 보입니다
+        </p>
 
-        <div className="flex gap-2 mb-8">
-          <Input
-            type="email"
-            placeholder="이메일을 입력하세요"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="flex-1"
-          />
-          <Button onClick={handleSearch} disabled={loading}>
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Search className="w-4 h-4 mr-1" />
-            )}
-            조회
-          </Button>
-        </div>
+        {loading && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
 
-        {searched && (
+        {!loading && (
           <div className="space-y-8">
             {organized.length > 0 && (
               <div>
@@ -194,18 +190,10 @@ export default function MyEventsPage() {
 
             {organized.length === 0 && participated.length === 0 && (
               <div className="text-center py-12 text-muted-foreground space-y-2">
-                <Search className="w-8 h-8 mx-auto opacity-50" />
-                <p>해당 이메일로 등록된 약속이 없습니다</p>
-                <p className="text-xs">다른 이메일로 다시 조회해보세요</p>
+                <CalendarDays className="w-8 h-8 mx-auto opacity-50" />
+                <p>아직 이 기기에서 만들거나 참여한 약속이 없습니다</p>
               </div>
             )}
-          </div>
-        )}
-
-        {!searched && (
-          <div className="text-center py-12 text-muted-foreground space-y-2">
-            <CalendarDays className="w-8 h-8 mx-auto opacity-50" />
-            <p>약속 생성 또는 참여 시 입력한 이메일로 조회하세요</p>
           </div>
         )}
       </div>

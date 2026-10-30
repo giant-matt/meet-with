@@ -33,9 +33,6 @@ function isRateLimited(key: string, maxRequests: number, windowMs: number): bool
 
 // Rate limit configuration per endpoint pattern
 function getRateLimit(pathname: string, method: string): { max: number; windowMs: number } | null {
-  if (method === "POST" && pathname.match(/^\/api\/events\/[^/]+\/verify$/)) {
-    return { max: 5, windowMs: 60_000 }; // 5 req/min — brute force protection
-  }
   if (method === "POST" && pathname === "/api/events") {
     return { max: 10, windowMs: 60_000 }; // 10 req/min
   }
@@ -45,19 +42,16 @@ function getRateLimit(pathname: string, method: string): { max: number; windowMs
   if (method === "GET" && pathname === "/api/admin/stats") {
     return { max: 5, windowMs: 60_000 }; // 5 req/min — brute force protection
   }
-  if (method === "GET" && pathname === "/api/my-events") {
-    return { max: 5, windowMs: 60_000 }; // 5 req/min — email enumeration protection
-  }
   if (method === "GET" && pathname.startsWith("/api/")) {
     return { max: 60, windowMs: 60_000 }; // 60 req/min
   }
   if (method === "PUT" || method === "DELETE") {
-    return { max: 10, windowMs: 60_000 }; // 10 req/min
+    return { max: 10, windowMs: 60_000 }; // 10 req/min — hostToken brute force protection
   }
   return null;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only apply to API routes

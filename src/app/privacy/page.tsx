@@ -47,7 +47,7 @@ export default function PrivacyPage() {
                 <tr>
                   <td className="border border-border px-3 py-2">이메일</td>
                   <td className="border border-border px-3 py-2">
-                    약속 주최자 확인, 내 약속 조회
+                    약속 관련 연락처 보관(인증에는 사용하지 않으며, 약속 수정·삭제 권한은 생성 시 발급되는 별도 비밀 링크로만 확인됩니다)
                   </td>
                   <td className="border border-border px-3 py-2">
                     주최자: 필수 / 참여자: 선택
@@ -102,10 +102,10 @@ export default function PrivacyPage() {
               <li>
                 개인정보 관련 문의:{" "}
                 <a
-                  href="mailto:hwang@ulsan.ac.kr"
+                  href="mailto:funforwook@gmail.com"
                   className="text-foreground underline"
                 >
-                  hwang@ulsan.ac.kr
+                  funforwook@gmail.com
                 </a>
               </li>
             </ul>
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
               6. 개인정보 보호 책임자
             </h2>
             <p className="text-sm text-muted-foreground">
-              이메일: hwang@ulsan.ac.kr
+              이메일: funforwook@gmail.com
             </p>
           </section>
         </div>

@@ -4,11 +4,17 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { logError } from "@/lib/logger";
 
+const timeSchema = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "시간 형식이 올바르지 않습니다");
+
 const respondSchema = z.object({
-  participantName: z.string().min(1, "이름을 입력해주세요"),
-  participantEmail: z.string().email("올바른 이메일을 입력해주세요").optional().or(z.literal("")),
-  editToken: z.string().optional(),
-  availability: z.record(z.string(), z.array(z.string())),
+  participantName: z.string().min(1, "이름을 입력해주세요").max(50, "이름이 너무 깁니다"),
+  participantEmail: z.string().email("올바른 이메일을 입력해주세요").max(254).optional().or(z.literal("")),
+  editToken: z.string().max(100).optional(),
+  availability: z
+    .record(z.string(), z.array(timeSchema).max(200, "선택한 시간이 너무 많습니다"))
+    .refine((obj) => Object.keys(obj).length <= 60, "날짜가 너무 많습니다"),
 });
 
 export async function POST(
@@ -91,10 +97,6 @@ export async function POST(
       });
     }
 
-    await prisma.response.deleteMany({
-      where: { participantId: participant.id },
-    });
-
     const responses: {
       participantId: string;
       eventDateId: string;
@@ -117,11 +119,12 @@ export async function POST(
       }
     }
 
-    if (responses.length > 0) {
-      await prisma.response.createMany({
-        data: responses,
-      });
-    }
+    await prisma.$transaction([
+      prisma.response.deleteMany({ where: { participantId: participant.id } }),
+      ...(responses.length > 0
+        ? [prisma.response.createMany({ data: responses })]
+        : []),
+    ]);
 
     return NextResponse.json({
       participant: { id: participant.id, name: participant.name },

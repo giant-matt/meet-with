@@ -23,11 +23,13 @@ export async function POST(request: Request) {
     const data = createEventSchema.parse(body);
 
     const slug = nanoid(8);
+    const hostToken = nanoid(24);
 
     const event = await prisma.event.create({
       data: {
         title: data.title,
         slug,
+        hostToken,
         description: data.description,
         organizerName: data.organizerName,
         organizerEmail: data.organizerEmail,
@@ -42,8 +44,10 @@ export async function POST(request: Request) {
           })),
         },
       },
-      include: {
-        dates: true,
+      select: {
+        slug: true,
+        hostToken: true,
+        dates: { select: { id: true, date: true } },
       },
     });
 

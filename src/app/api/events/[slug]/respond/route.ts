@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { nanoid } from "nanoid";
-import { handleApiError, jsonError } from "@/lib/api-errors";
+import { handleApiError, jsonError, safeEqual } from "@/lib/api-errors";
 
 const timeSchema = z
   .string()
@@ -56,28 +56,23 @@ export async function POST(
     let newEditToken: string | undefined;
 
     if (existing) {
-      // Existing participant: verify editToken
-      if (existing.editToken && existing.editToken !== "") {
-        if (!data.editToken || data.editToken !== existing.editToken) {
-          return jsonError(
-            "이 이름으로 이미 응답이 등록되어 있습니다. 같은 기기에서만 수정할 수 있습니다.",
-            403
-          );
-        }
+      // Existing participant: the editToken must match. A row without a token
+      // (legacy, none left in production as of 2026-11-08) is locked rather than
+      // open to anyone who knows the public participant name.
+      if (
+        !existing.editToken ||
+        !data.editToken ||
+        !safeEqual(data.editToken, existing.editToken)
+      ) {
+        return jsonError(
+          "이 이름으로 이미 응답이 등록되어 있습니다. 같은 기기에서만 수정할 수 있습니다.",
+          403
+        );
       }
-      // Token matches or no token set (legacy data) — allow update
       participant = await prisma.participant.update({
         where: { id: existing.id },
-        data: {
-          email: data.participantEmail || "",
-          // If legacy participant has no token, generate one now
-          ...(existing.editToken === "" ? { editToken: nanoid(16) } : {}),
-        },
+        data: { email: data.participantEmail || "" },
       });
-      // Return the token for legacy participants who just got one
-      if (existing.editToken === "") {
-        newEditToken = participant.editToken;
-      }
     } else {
       // New participant: generate editToken
       newEditToken = nanoid(16);

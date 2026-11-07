@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { handleApiError } from "@/lib/api-errors";
+import { dateSchema, timeSchema } from "@/lib/schemas";
 
 const createEventSchema = z.object({
   title: z.string().min(1, "제목을 입력해주세요").max(200, "제목이 너무 깁니다"),
@@ -10,9 +11,9 @@ const createEventSchema = z.object({
   organizerEmail: z.string().email("올바른 이메일을 입력해주세요").max(254),
   description: z.string().max(2000, "설명이 너무 깁니다").optional(),
   mode: z.enum(["DATETIME", "DATE_ONLY"]),
-  dates: z.array(z.string().max(30)).min(1, "날짜를 하나 이상 선택해주세요").max(60, "날짜는 60개까지 고를 수 있습니다"),
-  timeRangeStart: z.string().max(5).default("09:00"),
-  timeRangeEnd: z.string().max(5).default("18:00"),
+  dates: z.array(dateSchema).min(1, "날짜를 하나 이상 선택해주세요").max(60, "날짜는 60개까지 고를 수 있습니다"),
+  timeRangeStart: timeSchema.default("09:00"),
+  timeRangeEnd: timeSchema.default("18:00"),
   slotDuration: z.number().min(15).max(60).default(30),
   timezone: z.string().max(64).default("Asia/Seoul"),
 });

@@ -60,9 +60,9 @@ describe("GET /api/events/[slug]", () => {
 
   it("올바른 hostToken으로 조회하면 organizerEmail을 노출한다", async () => {
     mockFindUnique.mockResolvedValue(baseEvent);
-    const req = new Request(
-      "http://localhost/api/events/abc12345?hostToken=secret-token"
-    );
+    const req = new Request("http://localhost/api/events/abc12345", {
+      headers: { "x-host-token": "secret-token" },
+    });
     const res = await GET(req, routeParams());
     const json = await res.json();
     expect(json.event.organizerEmail).toBe("host@example.com");
@@ -70,9 +70,9 @@ describe("GET /api/events/[slug]", () => {
 
   it("틀린 hostToken으로 조회하면 organizerEmail을 계속 숨긴다", async () => {
     mockFindUnique.mockResolvedValue(baseEvent);
-    const req = new Request(
-      "http://localhost/api/events/abc12345?hostToken=wrong"
-    );
+    const req = new Request("http://localhost/api/events/abc12345", {
+      headers: { "x-host-token": "wrong" },
+    });
     const res = await GET(req, routeParams());
     const json = await res.json();
     expect(json.event.organizerEmail).toBeUndefined();

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { handleApiError, jsonError, isValidHostToken } from "@/lib/api-errors";
+import { dateSchema, timeSchema } from "@/lib/schemas";
 
 export async function GET(
   request: Request,
@@ -9,7 +10,8 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const hostToken = new URL(request.url).searchParams.get("hostToken");
+    // 비밀값은 URL(로그·히스토리에 남음)이 아니라 머리말로 받는다
+    const hostToken = request.headers.get("x-host-token");
 
     const event = await prisma.event.findUnique({
       where: { slug },
@@ -87,9 +89,9 @@ const updateEventSchema = z.object({
   organizerName: z.string().min(1).max(50).optional(),
   organizerEmail: z.string().email().max(254).optional(),
   mode: z.enum(["DATETIME", "DATE_ONLY"]).optional(),
-  dates: z.array(z.string().max(30)).min(1).max(60).optional(),
-  timeRangeStart: z.string().max(5).optional(),
-  timeRangeEnd: z.string().max(5).optional(),
+  dates: z.array(dateSchema).min(1).max(60).optional(),
+  timeRangeStart: timeSchema.optional(),
+  timeRangeEnd: timeSchema.optional(),
   slotDuration: z.number().min(15).max(60).optional(),
 });
 

@@ -60,9 +60,9 @@ function CreateForm() {
 
     (async () => {
       try {
-        const res = await fetch(
-          `/api/events/${editSlug}?hostToken=${encodeURIComponent(hostToken)}`
-        );
+        const res = await fetch(`/api/events/${editSlug}`, {
+          headers: { "x-host-token": hostToken },
+        });
         if (!res.ok) throw new Error();
         const { event } = await res.json();
 

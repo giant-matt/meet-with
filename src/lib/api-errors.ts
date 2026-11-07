@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { logError } from "@/lib/logger";
 
@@ -32,5 +33,11 @@ export function isValidHostToken(
   existingToken: string | null | undefined,
   providedToken: string | null | undefined
 ): boolean {
-  return !!existingToken && !!providedToken && providedToken === existingToken;
+  return !!existingToken && !!providedToken && safeEqual(providedToken, existingToken);
+}
+
+export function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
 }

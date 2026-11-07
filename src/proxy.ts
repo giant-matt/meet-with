@@ -59,8 +59,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+  // Vercel이 덮어쓰는 헤더만 믿는다 — x-forwarded-for 앞쪽 값은 클라이언트가 위조할 수 있다
+  const ip = request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
     || request.headers.get("x-real-ip")
+    || request.headers.get("x-forwarded-for")?.split(",").pop()?.trim()
     || "unknown";
 
   const limit = getRateLimit(pathname, request.method);

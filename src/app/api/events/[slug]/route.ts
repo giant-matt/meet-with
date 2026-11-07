@@ -81,15 +81,15 @@ export async function GET(
 }
 
 const updateEventSchema = z.object({
-  hostToken: z.string().min(1, "권한이 없습니다"),
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
-  organizerName: z.string().min(1).optional(),
-  organizerEmail: z.string().email().optional(),
+  hostToken: z.string().min(1, "권한이 없습니다").max(100),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(2000).optional(),
+  organizerName: z.string().min(1).max(50).optional(),
+  organizerEmail: z.string().email().max(254).optional(),
   mode: z.enum(["DATETIME", "DATE_ONLY"]).optional(),
-  dates: z.array(z.string()).min(1).optional(),
-  timeRangeStart: z.string().optional(),
-  timeRangeEnd: z.string().optional(),
+  dates: z.array(z.string().max(30)).min(1).max(60).optional(),
+  timeRangeStart: z.string().max(5).optional(),
+  timeRangeEnd: z.string().max(5).optional(),
   slotDuration: z.number().min(15).max(60).optional(),
 });
 

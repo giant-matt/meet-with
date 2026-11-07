@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { safeEqual } from "@/lib/api-errors";
 
 export async function GET(request: NextRequest) {
   const password = request.headers.get("x-admin-password");
-  if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+  if (!process.env.ADMIN_PASSWORD || !password || !safeEqual(password, process.env.ADMIN_PASSWORD)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
